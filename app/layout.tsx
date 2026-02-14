@@ -5,6 +5,7 @@ import { SITE_NAME } from "@/lib/constants/seo.constants";
 import { Providers } from "./providers";
 import { Toaster } from "sonner";
 
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],

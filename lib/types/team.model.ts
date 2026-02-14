@@ -9,6 +9,8 @@ export interface ITeam {
   avatarUrl?: string | null;
   leaderUserId: Id;
   description?: string | null;
+  ratingTotal?: number 
+  _count?:{users:number}
 
   createdAt: IsoDateString;
   updatedAt: IsoDateString;
@@ -23,4 +25,14 @@ export interface ITeamJoinRequest {
 
   createdAt: IsoDateString;
   updatedAt: IsoDateString;
+}
+
+export type ITeamMember = {
+  id: string
+  name: string
+  email: string
+  avatarUrl: string | null
+  role: "ADMIN" | "USER"
+  createdAt: string
+  ratingTotal: number
 }

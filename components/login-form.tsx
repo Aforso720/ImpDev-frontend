@@ -41,6 +41,7 @@ export function LoginForm({ className, ...props }:  React.ComponentProps<"div">)
   const msg = err?.response?.data.message
   if(msg === "Invalid password") return "Неверный email или пароль"
   if(msg === "User already exists") return "Этот email уже занят"
+  if(msg === "User not found") return "Такой пользователь не найден"
   return "Произошла ошибка. Попробуйте ещё раз."
   }
 
@@ -87,7 +88,7 @@ export function LoginForm({ className, ...props }:  React.ComponentProps<"div">)
         setError("root", { type: "server", message: msg })
       }
 
-      toast.error(msg)
+      // toast.error(msg)
     },
   })
 
@@ -104,7 +105,7 @@ export function LoginForm({ className, ...props }:  React.ComponentProps<"div">)
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0 transition-all duration-300 ease-out">
-        <CardContent className="grid p-0 md:grid-cols-2">
+        <CardContent className="p-0">
           <form className="p-6 md:p-8" onSubmit={handleSubmit(onSubmitHand)}>
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
@@ -242,13 +243,13 @@ export function LoginForm({ className, ...props }:  React.ComponentProps<"div">)
             </FieldGroup>
           </form>
 
-          <div className="bg-muted relative hidden md:block">
+          {/* <div className="bg-muted relative hidden md:block">
             <img
               src="/mug.jpg"
               alt="Изображение"
               className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
             />
-          </div>
+          </div> */}
         </CardContent>
       </Card>
     </div>

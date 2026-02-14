@@ -24,31 +24,31 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { CourseService } from "@/features/course/course.service"
+import { useQuery } from "@tanstack/react-query"
 
-export function NavProjects({
-  projects,
-}: {
-  projects: {
-    name: string
-    url: string
-    icon: LucideIcon
-  }[]
-}) {
+export function NavProjects() {
   const { isMobile } = useSidebar()
+  const {data , isLoading , isError} = useQuery({
+    queryKey:["course" , "public", { page: 1, limit: 5, q: "js" }],
+    queryFn: () => CourseService.getAllPublCourse(1,5),
+  })
+  
+  const projects = data?.items ?? []
 
   return (
-    <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+    <SidebarGroup className="group-data-[collapsibl e=icon]:hidden">
       <SidebarGroupLabel>Курсы</SidebarGroupLabel>
       <SidebarMenu>
         {projects.map((item) => (
-          <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton asChild>
-              <a href={item.url}>
-                <item.icon />
-                <span>{item.name}</span>
-              </a>
+          <SidebarMenuItem key={item.id} className="cursor-pointer">
+            <SidebarMenuButton>
+              {/* <a href={item.url}> */}
+                {/* <item.icon /> */}
+                <span className="truncate ...">{item.title}</span>
+              {/* </a> */}
             </SidebarMenuButton>
-            <DropdownMenu>
+            {/* <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuAction showOnHover>
                   <MoreHorizontal />
@@ -74,11 +74,11 @@ export function NavProjects({
                   <span>Delete Project</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenu> */}
           </SidebarMenuItem>
         ))}
         <SidebarMenuItem>
-          <SidebarMenuButton className="text-sidebar-foreground/70">
+          <SidebarMenuButton className="text-sidebar-foreground/70 cursor-pointer">
             <MoreHorizontal className="text-sidebar-foreground/70" />
             <span>More</span>
           </SidebarMenuButton>

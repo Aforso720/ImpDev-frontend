@@ -14,7 +14,7 @@ class UserService {
     private BASE_URL = '/user'
 
     async getProfile(){
-        const response = await axiosWithAuth.get<IProfileResponse>(this.BASE_URL + '/me')
+        const response = await axiosWithAuth.get<IUser>(this.BASE_URL + '/me')
         return response.data
     }
 

@@ -1,17 +1,19 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Skeleton } from "@/components/ui/skeleton"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Check, X } from "lucide-react"
-import { MAIN_COLOR, CONTRAST_COLOR } from "@/lib/constants/colors.constants"
-import { formatDate } from "@/lib/format-date"
-import { TeamService } from "../team.service"
-import { getInitials } from "@/lib/getInitials"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
+import { BRAND_COLOR, CONTRAST_COLOR, MAIN_COLOR } from "@/lib/constants/colors.constants"
+import { formatDate } from "@/lib/format-date"
+import { getInitials } from "@/lib/getInitials"
+
+import { TeamService } from "../team.service"
 
 type JoinRequest = {
   id: string
@@ -47,7 +49,6 @@ export default function JoinRequestsTeamProfile() {
     onSuccess: async () => {
       toast.success("Заявка принята")
       await qc.invalidateQueries({ queryKey: ["join-request", "team", "incoming"] })
-      // опционально: если у тебя где-то выводятся участники команды
       await qc.invalidateQueries({ queryKey: ["team", "members", "me"] })
     },
     onError: () => {
@@ -71,8 +72,10 @@ export default function JoinRequestsTeamProfile() {
     <Card style={{ backgroundColor: MAIN_COLOR, color: CONTRAST_COLOR }} className="p-5">
       <CardHeader className="p-0 pb-4">
         <div className="flex items-center justify-between gap-3">
-          <CardTitle className="text-xl font-bold text-[#344966]">Заявки в команду:</CardTitle>
-          <Badge variant="outline" className="border-[#344966] text-[#344966]">
+          <CardTitle className="text-xl font-bold" style={{ color: BRAND_COLOR }}>
+            Заявки в команду:
+          </CardTitle>
+          <Badge variant="outline" className="border-brand-soft text-brand-strong">
             {rows.length}
           </Badge>
         </div>
@@ -107,7 +110,7 @@ export default function JoinRequestsTeamProfile() {
             Не удалось загрузить заявки. Попробуйте обновить страницу.
           </div>
         ) : rows.length === 0 ? (
-          <div className="rounded-xl bg-[#344966] p-4 text-sm text-[#C7D9E5] ">
+          <div className="rounded-xl bg-soft-panel p-4 text-sm text-ink-strong">
             Сейчас нет заявок на вступление.
           </div>
         ) : (
@@ -119,7 +122,7 @@ export default function JoinRequestsTeamProfile() {
               const anyPendingThis = approvingThis || rejectingThis
 
               return (
-                <div key={r.id} className="rounded-xl bg-[#344966] p-4 text-[#C7D9E5]">
+                <Card key={r.id} className="rounded-xl p-4 text-ink-strong">
                   <div className="flex flex-wrap items-center gap-3">
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={r.user.avatarUrl ?? undefined} alt={display} />
@@ -138,31 +141,31 @@ export default function JoinRequestsTeamProfile() {
                     </div>
 
                     {r.status === "PENDING" ? (
-                      <div className="flex items-center gap-2 ">
+                      <div className="flex items-center gap-2">
                         <Button
                           size="sm"
-                          className="gap-2 border-2 border-[#C7D9E5] cursor-pointer"
+                          className="cursor-pointer gap-2 border-2 border-brand-soft"
                           onClick={() => approveMutate(r.id)}
                           disabled={anyPendingThis}
                         >
                           <Check className="h-4 w-4" />
-                          {approvingThis ? "Принимаем…" : "Принять"}
+                          {approvingThis ? "Принимаем..." : "Принять"}
                         </Button>
 
                         <Button
                           size="sm"
                           variant="secondary"
-                          className="gap-2 cursor-pointer"
+                          className="cursor-pointer gap-2"
                           onClick={() => rejectMutate(r.id)}
                           disabled={anyPendingThis}
                         >
                           <X className="h-4 w-4" />
-                          {rejectingThis ? "Отклоняем…" : "Отклонить"}
+                          {rejectingThis ? "Отклоняем..." : "Отклонить"}
                         </Button>
                       </div>
                     ) : null}
                   </div>
-                </div>
+                </Card>
               )
             })}
           </div>

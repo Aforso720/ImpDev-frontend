@@ -1,15 +1,10 @@
-import { SidebarLayout } from "@/features/ui/SidebarLayout";
-
+import { DashboardOverview } from "@/features/dashboard/components/DashboardOverview"
+import { SidebarLayout } from "@/features/ui/SidebarLayout"
 
 export default function Home() {
   return (
-        <SidebarLayout>
-           <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-                <div className="bg-muted/50 aspect-video rounded-xl" />
-                <div className="bg-muted/50 aspect-video rounded-xl" />
-                <div className="bg-muted/50 aspect-video rounded-xl" />
-              </div>
-              <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min" />
-        </SidebarLayout>
+    <SidebarLayout>
+      <DashboardOverview />
+    </SidebarLayout>
   )
 }

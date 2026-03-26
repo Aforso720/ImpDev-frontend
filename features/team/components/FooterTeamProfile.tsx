@@ -6,18 +6,18 @@ const FooterTeamProfile = () => {
   const teamRating = useTeamStore((s)=>s.teamRating)
   const topInRatingMember = useTeamStore((s)=>s.topInRatingMember)
   return (
-    <footer className="flex gap-5 mt-5 text-center border-y-4 py-5 ">
+    <footer className="mt-5 flex gap-5 border-y-4 border-brand-soft py-5 text-center text-ink-strong">
         <div className="flex-1/3">
             <CardTitle className="text-xl font-medium">Топ по рейтингу:</CardTitle>
-            <span className="text-8xl font-bold text-[#C7D9E5]">{topInRatingMember}</span>
+            <span className="text-8xl font-bold text-brand-strong">{topInRatingMember}</span>
         </div>  
         <div className="flex-1/3">
             <CardTitle className="text-xl font-medium">Участников:</CardTitle>
-            <span className="text-8xl font-bold text-[#C7D9E5]">{teamMember}</span>
+            <span className="text-8xl font-bold text-brand-strong">{teamMember}</span>
         </div>   
         <div className="flex-1/3">
             <CardTitle className="text-xl font-medium">Рейтинг команды:</CardTitle>
-            <span className="text-8xl font-bold text-[#C7D9E5]">{teamRating}</span>
+            <span className="text-8xl font-bold text-brand-strong">{teamRating}</span>
         </div>  
     </footer>
   )

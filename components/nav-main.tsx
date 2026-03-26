@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { type LucideIcon } from "lucide-react"
 import {
   SidebarMenu,
@@ -29,10 +30,10 @@ export function NavMain({ items }: { items: NavItem[] }) {
         return (
           <SidebarMenuItem key={item.title}>
             <SidebarMenuButton asChild isActive={active}>
-              <a href={item.url}>
+              <Link href={item.url}>
                 <item.icon />
                 <span>{item.title}</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         )

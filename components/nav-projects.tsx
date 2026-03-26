@@ -1,86 +1,48 @@
 "use client"
 
-import {
-  Folder,
-  Forward,
-  MoreHorizontal,
-  Trash2,
-  type LucideIcon,
-} from "lucide-react"
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuAction,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from "@/components/ui/sidebar"
-import { CourseService } from "@/features/course/course.service"
+import Link from "next/link"
+import { MoreHorizontal } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
 
+import { CourseService } from "@/features/course/course.service"
+import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar"
+
 export function NavProjects() {
-  const { isMobile } = useSidebar()
-  const {data , isLoading , isError} = useQuery({
-    queryKey:["course" , "public", { page: 1, limit: 5, q: "js" }],
-    queryFn: () => CourseService.getAllPublCourse(1,5),
+  const { data, isLoading } = useQuery({
+    queryKey: ["course", "public", { page: 1, limit: 5 }],
+    queryFn: () => CourseService.getAvailable({ page: 1, limit: 5 }),
   })
-  
+
   const projects = data?.items ?? []
 
   return (
-    <SidebarGroup className="group-data-[collapsibl e=icon]:hidden">
-      <SidebarGroupLabel>Курсы</SidebarGroupLabel>
+    <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+      <SidebarGroupLabel>Быстрый доступ к курсам</SidebarGroupLabel>
       <SidebarMenu>
-        {projects.map((item) => (
-          <SidebarMenuItem key={item.id} className="cursor-pointer">
-            <SidebarMenuButton>
-              {/* <a href={item.url}> */}
-                {/* <item.icon /> */}
-                <span className="truncate ...">{item.title}</span>
-              {/* </a> */}
+        {isLoading ? (
+          <SidebarMenuItem>
+            <SidebarMenuButton disabled>
+              <span className="truncate">Загружаем список...</span>
             </SidebarMenuButton>
-            {/* <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuAction showOnHover>
-                  <MoreHorizontal />
-                  <span className="sr-only">More</span>
-                </SidebarMenuAction>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-48 rounded-lg"
-                side={isMobile ? "bottom" : "right"}
-                align={isMobile ? "end" : "start"}
-              >
-                <DropdownMenuItem>
-                  <Folder className="text-muted-foreground" />
-                  <span>View Project</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Forward className="text-muted-foreground" />
-                  <span>Share Project</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Trash2 className="text-muted-foreground" />
-                  <span>Delete Project</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu> */}
+          </SidebarMenuItem>
+        ) : null}
+
+        {projects.map((item) => (
+          <SidebarMenuItem key={item.id}>
+            <SidebarMenuButton asChild>
+              <Link href={`/courses/${item.slug}`}>
+                <span className="truncate">{item.title}</span>
+              </Link>
+            </SidebarMenuButton>
           </SidebarMenuItem>
         ))}
+
         <SidebarMenuItem>
-          <SidebarMenuButton className="text-sidebar-foreground/70 cursor-pointer">
-            <MoreHorizontal className="text-sidebar-foreground/70" />
-            <span>More</span>
+          <SidebarMenuButton asChild className="cursor-pointer text-sidebar-foreground/70">
+            <Link href="/courses">
+              <MoreHorizontal className="text-sidebar-foreground/70" />
+              <span>Все курсы</span>
+            </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>

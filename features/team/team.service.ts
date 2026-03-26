@@ -30,8 +30,8 @@ export const TeamService = {
     },
 
     async deleteTeam(teamId:string):Promise<boolean>{
-        const res = await axiosWithAuth.delete<{ok:boolean}>(`/admin/teams/${teamId}`)
-        return res.data.ok
+        await axiosWithAuth.delete(`/admin/teams/${teamId}`)
+        return true
     },
 
     async approveJoinRequest(joinRequestId:string):Promise<ITeamJoinRequest>{
@@ -40,7 +40,7 @@ export const TeamService = {
     },
 
     async rejectJoinRequest(joinRequestId:string):Promise<ITeamJoinRequest>{
-        const res = await axiosWithAuth.patch<ITeamJoinRequest>(`/team/join-requests/${joinRequestId}/approve`)
+        const res = await axiosWithAuth.patch<ITeamJoinRequest>(`/team/join-requests/${joinRequestId}/reject`)
         return res.data
     },
 

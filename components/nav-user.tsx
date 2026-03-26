@@ -1,12 +1,7 @@
 "use client"
 
-import {
-  Bell,
-  ChevronsUpDown,
-  LogOut,
-  Settings,
-  User,
-} from "lucide-react"
+import Link from "next/link"
+import { Bell, ChevronsUpDown, LogOut, Settings, User } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -18,18 +13,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from "@/components/ui/sidebar"
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
 
+import { UniversityService } from "@/features/university/university.service"
 import { authService } from "@/lib/services/auth.service"
 import { userService } from "@/lib/services/user.service"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+
+const roleLabel: Record<string, string> = {
+  ADMIN: "Администратор",
+  USER: "Участник",
+}
 
 export function NavUser() {
   const { isMobile } = useSidebar()
@@ -41,6 +37,11 @@ export function NavUser() {
     queryFn: () => userService.getProfile(),
   })
 
+  const { data: myUniversities = [] } = useQuery({
+    queryKey: ["university", "my", "sidebar"],
+    queryFn: () => UniversityService.getMy(),
+  })
+
   const { mutate: logoutMutate, isPending: isLogoutPending } = useMutation({
     mutationKey: ["logout"],
     mutationFn: () => authService.logout(),
@@ -48,18 +49,19 @@ export function NavUser() {
       await queryClient.cancelQueries()
       queryClient.clear()
       router.replace("/auth")
-      toast.success("Вы вышли из аккаунта")
+      toast.success("Сессия завершена")
     },
     onError: () => {
       queryClient.clear()
       router.replace("/auth")
-      toast.error("Не удалось выйти корректно, но сессия очищена")
+      toast.error("Сессия очищена, выход выполнен")
     },
   })
 
   const safeName = user?.name ?? "Пользователь"
-  const safeEmail = user?.email ?? "—"
   const safeAvatar = user?.avatarUrl ?? ""
+  const universityName = myUniversities[0]?.name ?? "Без университета"
+  const subtitle = `${roleLabel[user?.role ?? "USER"]} · ${universityName}`
 
   return (
     <SidebarMenu>
@@ -73,18 +75,12 @@ export function NavUser() {
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={safeAvatar} alt={safeName} />
-                <AvatarFallback className="rounded-lg">
-                  {safeName.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
+                <AvatarFallback className="rounded-lg">{safeName.slice(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
 
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">
-                  {isLoading ? "Загрузка…" : safeName}
-                </span>
-                <span className="truncate text-xs">
-                  {isLoading ? "—" : safeEmail}
-                </span>
+                <span className="truncate font-medium">{isLoading ? "Загрузка..." : safeName}</span>
+                <span className="truncate text-xs">{isLoading ? "..." : subtitle}</span>
               </div>
 
               <ChevronsUpDown className="ml-auto size-4" />
@@ -101,14 +97,12 @@ export function NavUser() {
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={safeAvatar} alt={safeName} />
-                  <AvatarFallback className="rounded-lg">
-                    {safeName.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
+                  <AvatarFallback className="rounded-lg">{safeName.slice(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
 
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{safeName}</span>
-                  <span className="truncate text-xs">{safeEmail}</span>
+                  <span className="truncate text-xs">{subtitle}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
@@ -116,15 +110,17 @@ export function NavUser() {
             <DropdownMenuSeparator />
 
             <DropdownMenuGroup>
-              <DropdownMenuItem disabled={isLoading || isError}>
-                <User />
-                Профиль
+              <DropdownMenuItem asChild>
+                <Link href="/profile">
+                  <User />
+                  Профиль
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem disabled={isLoading || isError}>
+              <DropdownMenuItem disabled>
                 <Settings />
                 Настройки
               </DropdownMenuItem>
-              <DropdownMenuItem disabled={isLoading || isError}>
+              <DropdownMenuItem disabled>
                 <Bell />
                 Уведомления
               </DropdownMenuItem>
@@ -132,12 +128,9 @@ export function NavUser() {
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem
-              onClick={() => logoutMutate()}
-              disabled={isLogoutPending}
-            >
+            <DropdownMenuItem onClick={() => logoutMutate()} disabled={isLogoutPending}>
               <LogOut />
-              Выйти из аккаунта
+              Выйти
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

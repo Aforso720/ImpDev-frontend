@@ -69,3 +69,52 @@ export type UniversityItem = {
   facts: UniversityFact[]
   programs: UniversityProgram[]
 }
+
+export type UniversityInviteMeta = {
+  id: string
+  tokenPrefix: string
+  expiresAt: string | Date | null
+  maxUses: number | null
+  usedCount: number
+  revokedAt: string | Date | null
+  createdAt: string | Date
+  groupId: string | null
+}
+export type UniversityProgramItem = { id: string; name: string; level?: string | null; description?: string | null }
+export type UniversityFactItem = { id: string; label: string; value: string; order: number }
+
+export type UniversityProfileData = UniversityItem &
+  Partial<{
+    shortName: string | null
+    foundedYear: number | null
+    rectorName: string | null
+    motto: string | null
+    mission: string | null
+    aboutShort: string | null
+    aboutFullMd: string | null
+
+    mapUrl: string | null
+    dormitoryInfoUrl: string | null
+    scholarshipsUrl: string | null
+    careerCenterUrl: string | null
+    internationalUrl: string | null
+
+    partnershipsEmail: string | null
+
+    programs: UniversityProgramItem[]
+    facts: UniversityFactItem[]
+    invites: UniversityInviteMeta[]
+  }>
+
+export type UniversityMembershipItem = UniversityItem & {
+  myRole: "LEADER" | "INSTRUCTOR" | "STUDENT"
+  myStatus: "ACTIVE" | "BLOCKED"
+}
+
+export type UniversityGroupItem = {
+  id: string
+  universityId: string
+  name: string
+  type: "ACADEMIC_GROUP" | "STREAM"
+  description: string | null
+}

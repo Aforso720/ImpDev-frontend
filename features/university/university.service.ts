@@ -1,6 +1,6 @@
-
 import { axiosWithAuth } from "@/lib/api/interceptors"
-import type { UniversityItem } from "./university.types"
+
+import type { UniversityGroupItem, UniversityItem, UniversityMembershipItem } from "./university.types"
 
 export const UniversityService = {
   async getAll(): Promise<UniversityItem[]> {
@@ -8,8 +8,18 @@ export const UniversityService = {
     return res.data
   },
 
+  async getMy(): Promise<UniversityMembershipItem[]> {
+    const res = await axiosWithAuth.get<UniversityMembershipItem[]>("/university/my")
+    return res.data
+  },
+
   async getBySlug(slug: string): Promise<UniversityItem> {
     const res = await axiosWithAuth.get<UniversityItem>(`/university/${slug}`)
+    return res.data
+  },
+
+  async getGroups(universityId: string): Promise<UniversityGroupItem[]> {
+    const res = await axiosWithAuth.get<UniversityGroupItem[]>(`/university/${universityId}/groups`)
     return res.data
   },
 }

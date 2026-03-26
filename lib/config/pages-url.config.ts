@@ -3,8 +3,8 @@ class DASHBOARD {
 
     HOME = this.root
     TEAM = `${this.root}/team`
-    COURSE = `${this.root}/course`
-    UNIVERSITE = `${this.root}/universite`
+    COURSES = `${this.root}/courses`
+    UNIVERSITY = `${this.root}/university`
     PROFILE = `${this.root}/profile`
 }
 

@@ -1,24 +1,27 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import Link from "next/link"
 import { useQuery } from "@tanstack/react-query"
+import { ArrowUpRight, MapPin, Search, ShieldCheck, Users } from "lucide-react"
 
-import { Card, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
+import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-
-import { MAIN_COLOR } from "@/lib/constants/colors.constants"
 import { formatDate } from "@/lib/format-date"
+import { getInitials } from "@/lib/getInitials"
+import { cn } from "@/lib/utils"
 
 import { UniversityService } from "../university.service"
 import type { UniversityItem } from "../university.types"
 import { InviteLinkDialog } from "./InviteLinkDialog"
-import { getInitials } from "@/lib/getInitials"
+
+function normalize(value?: string | null) {
+  return (value ?? "").trim().toLowerCase()
+}
 
 export function UniversityCatalog() {
   const [q, setQ] = useState("")
@@ -29,99 +32,186 @@ export function UniversityCatalog() {
   })
 
   const items = (data ?? []) as UniversityItem[]
+  const query = normalize(q)
+
+  const filtered = useMemo(() => {
+    if (!query) return items
+
+    return items.filter((uni) => {
+      const haystack = [
+        uni.name,
+        uni.slug,
+        uni.description,
+        uni.city,
+        uni.region,
+        ...(uni.tags ?? []).map((tag) => tag.value),
+      ]
+        .map(normalize)
+        .join(" ")
+
+      return haystack.includes(query)
+    })
+  }, [items, query])
+
+  const totalMembers = items.reduce((sum, uni) => sum + (uni._count?.memberships ?? 0), 0)
 
   return (
-    <Card className={`bg-[${MAIN_COLOR}] mt-10 p-5 mb-5`}>
-      <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <CardTitle className="text-2xl flex-1">Университеты</CardTitle>
+    <section className="mt-8 space-y-4">
+      <Card className="overflow-hidden border-0 bg-brand-panel py-0">
+        <CardContent className="grid gap-4 p-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+          <div className="min-w-0">
+            <Badge variant="secondary" className="bg-white/12 text-ink-inverse hover:bg-white/12">
+              Каталог университетов
+            </Badge>
 
-        <div className="w-full md:w-[360px]">
-          <Input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Поиск по названию или описанию…"
-            className="border-[#344966]"
-          />
+            <CardTitle className="mt-4 text-3xl text-ink-inverse">Университеты региона</CardTitle>
+            <CardDescription className="mt-2 max-w-2xl text-ink-inverse/80">
+              Карточки сделаны крупнее и выразительнее, чтобы каталог выглядел полноценно даже при небольшом количестве вузов.
+            </CardDescription>
+
+            <div className="relative mt-4 w-full max-w-md">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-soft/70" />
+              <Input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Поиск по названию, описанию, городу..."
+                className="h-10 border-white/20 bg-white/90 pl-9"
+              />
+            </div>
+          </div>
+
+          <Card className="bg-white/10 py-0 shadow-none">
+            <CardContent className="grid h-full gap-3 p-4">
+              <div className="rounded-xl bg-white/12 p-3">
+                <p className="text-xs uppercase tracking-[0.16em] text-ink-inverse/65">Вузов</p>
+                <p className="mt-1 text-2xl font-semibold text-ink-inverse">{items.length}</p>
+              </div>
+
+              <div className="rounded-xl bg-white/12 p-3">
+                <p className="text-xs uppercase tracking-[0.16em] text-ink-inverse/65">Участников</p>
+                <p className="mt-1 text-2xl font-semibold text-ink-inverse">{totalMembers}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </CardContent>
+      </Card>
+
+      {isLoading ? (
+        <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <Skeleton key={index} className="h-72 rounded-2xl" />
+          ))}
         </div>
-      </header>
-
-      <Separator className="my-4" />
-
-      <section className="flex flex-col gap-3">
-        {isLoading ? (
-          <>
-            <div className="flex items-center gap-3 p-4 rounded-xl bg-muted/40">
-              <Skeleton className="h-10 w-10 rounded-full" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-[40%]" />
-                <Skeleton className="h-3 w-[65%]" />
-              </div>
-              <Skeleton className="h-9 w-24" />
-            </div>
-            <div className="flex items-center gap-3 p-4 rounded-xl bg-muted/40">
-              <Skeleton className="h-10 w-10 rounded-full" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-[30%]" />
-                <Skeleton className="h-3 w-[55%]" />
-              </div>
-              <Skeleton className="h-9 w-24" />
-            </div>
-          </>
-        ) : isError ? (
-          <div className="text-sm text-destructive">Не удалось загрузить список университетов</div>
-        ) : items.length === 0 ? (
-          <div className="text-sm text-muted-foreground">Ничего не найдено</div>
-        ) : (
-          items.map((u) => {
-            const members = u._count?.memberships ?? 0
-            const invite = u.inviteUrl?.trim() || null
+      ) : isError ? (
+        <Card>
+          <CardContent className="p-6 text-sm text-destructive">
+            Не удалось загрузить список университетов.
+          </CardContent>
+        </Card>
+      ) : filtered.length === 0 ? (
+        <Card>
+          <CardContent className="p-6 text-sm text-muted-foreground">
+            {query ? "По вашему запросу ничего не найдено." : "Пока нет университетов для отображения."}
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+          {filtered.map((uni) => {
+            const members = uni._count?.memberships ?? 0
+            const invite = uni.inviteUrl?.trim() || null
+            const cityLine = [uni.city, uni.region].filter(Boolean).join(" • ")
+            const shouldStretch = filtered.length === 1
 
             return (
-              <Card key={u.id} className="p-4 bg-muted/30">
-                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                  <div className="flex items-start gap-3 min-w-0">
-                    <Avatar className="h-10 w-10 shrink-0">
-                      <AvatarImage src={u.avatarUrl ?? undefined} alt={u.name} />
-                      <AvatarFallback>{getInitials(u.name)}</AvatarFallback>
+              <Card
+                key={uni.id}
+                className={cn(
+                  "group overflow-hidden border-brand-soft bg-white/85 py-0 transition-shadow hover:shadow-md",
+                  shouldStretch && "md:col-span-2 2xl:col-span-3"
+                )}
+              >
+                <div className="relative h-32 overflow-hidden">
+                  {uni.bannerUrl ? (
+                    <>
+                      <img
+                        src={uni.bannerUrl}
+                        alt=""
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/25 to-transparent" />
+                    </>
+                  ) : (
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgb(199_217_229/.9),transparent_45%),radial-gradient(circle_at_90%_10%,rgb(52_73_102/.45),transparent_40%),linear-gradient(145deg,rgb(36_56_83/.92),rgb(52_73_102/.85))]" />
+                  )}
+
+                  <div className="absolute left-4 top-4 inline-flex items-center rounded-full bg-black/35 px-2.5 py-1 text-xs text-white backdrop-blur-sm">
+                    {cityLine || "Региональный университет"}
+                  </div>
+                </div>
+
+                <CardContent className="p-4">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <Avatar className="h-11 w-11 shrink-0 ring-2 ring-white">
+                      <AvatarImage src={uni.avatarUrl ?? undefined} alt={uni.name} />
+                      <AvatarFallback>{getInitials(uni.name)}</AvatarFallback>
                     </Avatar>
 
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <p className="font-semibold truncate">{u.name}</p>
-                        <Badge variant="secondary" className="shrink-0">
-                          Участников: {members}
-                        </Badge>
-                      </div>
-
-                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                        {u.description || "Без описания"}
-                      </p>
-
-                      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                        <span>Slug: {u.slug}</span>
-                        <span>Создан: {u.createdAt ? formatDate(u.createdAt) : "—"}</span>
-                      </div>
+                    <div className="min-w-0">
+                      <CardTitle className="truncate text-lg">{uni.name}</CardTitle>
+                      <p className="text-xs text-muted-foreground">{uni.slug}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-end gap-2">
+                  <p className="mt-3 min-h-[3.75rem] text-sm text-ink-soft line-clamp-3">
+                    {uni.description || "Описание пока не добавлено."}
+                  </p>
+
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                    <Badge variant="secondary" className="gap-1.5">
+                      <Users className="h-3.5 w-3.5" />
+                      {members}
+                    </Badge>
+
+                    <Badge variant="outline" className="gap-1.5">
+                      <MapPin className="h-3.5 w-3.5" />
+                      {uni.city || "Город не указан"}
+                    </Badge>
+
+                    <Badge variant="outline">Создан: {uni.createdAt ? formatDate(uni.createdAt) : "—"}</Badge>
+
+                    {uni.isState ? (
+                      <Badge variant="outline" className="gap-1.5">
+                        <ShieldCheck className="h-3.5 w-3.5" />
+                        Гос.
+                      </Badge>
+                    ) : null}
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <Button asChild size="sm" className="gap-1.5">
+                      <Link href={`/university/${uni.slug}`}>
+                        Открыть профиль
+                        <ArrowUpRight className="h-4 w-4" />
+                      </Link>
+                    </Button>
+
                     {invite ? (
                       <InviteLinkDialog
                         inviteUrl={invite}
-                        trigger={<Button variant="outline" size="sm">Инвайт</Button>}
+                        trigger={
+                          <Button variant="outline" size="sm">
+                            Инвайт
+                          </Button>
+                        }
                       />
                     ) : null}
-
-                    <Button asChild size="sm">
-                      <Link href={`/university/${u.slug}`}>Открыть</Link>
-                    </Button>
                   </div>
-                </div>
+                </CardContent>
               </Card>
             )
-          })
-        )}
-      </section>
-    </Card>
+          })}
+        </div>
+      )}
+    </section>
   )
 }

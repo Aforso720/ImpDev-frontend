@@ -1,0 +1,103 @@
+import type { EventListItem, PostFeedItem, ProjectListItem } from "./community.types"
+
+export const demoPosts: PostFeedItem[] = [
+  {
+    id: "demo-post-1",
+    title: "Открыт набор на межвузовскую неделю семинаров",
+    contentMd:
+      "Открыт прием заявок на региональную неделю семинаров. Приглашаем студенческие команды, наставников и научные группы.",
+    coverUrl: null,
+    visibility: "PUBLIC",
+    publishedAt: "2026-03-20T09:00:00.000Z",
+    createdAt: "2026-03-20T09:00:00.000Z",
+    author: { id: "demo-author-1", name: "Редакция Bayanum", avatarUrl: null },
+    university: null,
+    group: null,
+    myReaction: null,
+    categories: [
+      { id: "demo-category-news", key: "NEWS", title: "Новость" },
+      { id: "demo-category-event", key: "EVENT", title: "Мероприятие" },
+    ],
+    _count: { reactions: 24, comments: 7 },
+  },
+  {
+    id: "demo-post-2",
+    title: "Набор в команду на AI-хакатон",
+    contentMd: "Ищем backend и data-участников в команду для регионального хакатона.",
+    coverUrl: null,
+    visibility: "UNIVERSITY",
+    publishedAt: "2026-03-21T12:30:00.000Z",
+    createdAt: "2026-03-21T12:30:00.000Z",
+    author: { id: "demo-author-2", name: "Студенческий AI-клуб", avatarUrl: null },
+    university: { id: "demo-university-1", name: "Региональный технический университет", slug: "regional-tech-university" },
+    group: null,
+    myReaction: null,
+    categories: [{ id: "demo-category-team", key: "TEAM_RECRUITMENT", title: "Набор в команду" }],
+    _count: { reactions: 13, comments: 3 },
+  },
+]
+
+export const demoEvents: EventListItem[] = [
+  {
+    id: "demo-event-1",
+    title: "Межвузовский AI-хакатон",
+    description: "Двухдневный гибридный хакатон для смешанных университетских команд и наставников.",
+    format: "HYBRID",
+    startAt: "2026-04-10T08:00:00.000Z",
+    endAt: "2026-04-10T18:00:00.000Z",
+    location: "Главный кампус + онлайн-трансляция",
+    capacity: 120,
+    registrationDeadline: "2026-04-05T20:00:00.000Z",
+    university: { id: "demo-university-1", name: "Региональный технический университет", slug: "regional-tech-university" },
+    group: null,
+    _count: { registrations: 76 },
+  },
+  {
+    id: "demo-event-2",
+    title: "Практический воркшоп по data science",
+    description: "Прикладной воркшоп по ML-пайплайнам для университетских проектов.",
+    format: "ONLINE",
+    startAt: "2026-04-03T14:00:00.000Z",
+    endAt: "2026-04-03T16:00:00.000Z",
+    location: "Онлайн",
+    capacity: null,
+    registrationDeadline: "2026-04-02T20:00:00.000Z",
+    university: null,
+    group: null,
+    _count: { registrations: 58 },
+  },
+]
+
+export const demoProjects: ProjectListItem[] = [
+  {
+    id: "demo-project-1",
+    title: "Региональная платформа AI-компетенций",
+    summary: "Совместная инициатива, связывающая обучение, практику и портфолио.",
+    descriptionMd:
+      "Проект объединяет учебные траектории, ленту сообществ и трекинг личного вклада участников.",
+    status: "ACTIVE",
+    startDate: "2026-02-10T00:00:00.000Z",
+    endDate: null,
+    demoUrl: "https://demo.example.com/regional-ai-skills",
+    repoUrl: "https://github.com/example/regional-ai-skills",
+    owner: { id: "demo-owner-1", name: "Руководитель проекта", avatarUrl: null },
+    university: { id: "demo-university-1", name: "Региональный технический университет", slug: "regional-tech-university" },
+    group: null,
+    _count: { members: 6, updates: 4 },
+  },
+  {
+    id: "demo-project-2",
+    title: "Smart Campus Data Hub",
+    summary: "Межвузовый data-набор инструментов для аналитики кампуса.",
+    descriptionMd: "Практический data engineering проект с наставниками и еженедельными обновлениями.",
+    status: "PLANNING",
+    startDate: "2026-03-01T00:00:00.000Z",
+    endDate: null,
+    demoUrl: null,
+    repoUrl: "https://github.com/example/smart-campus-data-hub",
+    owner: { id: "demo-owner-2", name: "Координатор data-команды", avatarUrl: null },
+    university: null,
+    group: null,
+    _count: { members: 4, updates: 1 },
+  },
+]

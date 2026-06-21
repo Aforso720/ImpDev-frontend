@@ -57,39 +57,39 @@ export function UniversityCatalog() {
 
   return (
     <section className="mt-8 space-y-4">
-      <Card className="overflow-hidden border-0 bg-brand-panel py-0">
+      <Card className="overflow-hidden border-0 bg-brand-deep py-0">
         <CardContent className="grid gap-4 p-6 lg:grid-cols-[minmax(0,1fr)_280px]">
           <div className="min-w-0">
-            <Badge variant="secondary" className="bg-white/12 text-ink-inverse hover:bg-white/12">
+            <Badge variant="secondary" className="bg-nuri-accent/15 text-white hover:bg-nuri-accent/15">
               Каталог университетов
             </Badge>
 
-            <CardTitle className="mt-4 text-3xl text-ink-inverse">Университеты региона</CardTitle>
-            <CardDescription className="mt-2 max-w-2xl text-ink-inverse/80">
+            <CardTitle className="mt-4 text-3xl text-white">Университеты региона</CardTitle>
+            <CardDescription className="mt-2 max-w-2xl text-white/80">
               Карточки сделаны крупнее и выразительнее, чтобы каталог выглядел полноценно даже при небольшом количестве вузов.
             </CardDescription>
 
             <div className="relative mt-4 w-full max-w-md">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-soft/70" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70" />
               <Input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Поиск по названию, описанию, городу..."
-                className="h-10 border-white/20 bg-white/90 pl-9"
+                className="h-10 border-nuri-accent/20 bg-card/90 pl-9"
               />
             </div>
           </div>
 
-          <Card className="bg-white/10 py-0 shadow-none">
+          <Card className="bg-card/10 py-0 shadow-none">
             <CardContent className="grid h-full gap-3 p-4">
-              <div className="rounded-xl bg-white/12 p-3">
-                <p className="text-xs uppercase tracking-[0.16em] text-ink-inverse/65">Вузов</p>
-                <p className="mt-1 text-2xl font-semibold text-ink-inverse">{items.length}</p>
+              <div className="rounded-xl bg-nuri-accent/15 p-3">
+                <p className="text-xs uppercase tracking-[0.16em] text-white/65">Вузов</p>
+                <p className="mt-1 text-2xl font-semibold text-white">{items.length}</p>
               </div>
 
-              <div className="rounded-xl bg-white/12 p-3">
-                <p className="text-xs uppercase tracking-[0.16em] text-ink-inverse/65">Участников</p>
-                <p className="mt-1 text-2xl font-semibold text-ink-inverse">{totalMembers}</p>
+              <div className="rounded-xl bg-nuri-accent/15 p-3">
+                <p className="text-xs uppercase tracking-[0.16em] text-white/65">Участников</p>
+                <p className="mt-1 text-2xl font-semibold text-white">{totalMembers}</p>
               </div>
             </CardContent>
           </Card>
@@ -126,7 +126,7 @@ export function UniversityCatalog() {
               <Card
                 key={uni.id}
                 className={cn(
-                  "group overflow-hidden border-brand-soft bg-white/85 py-0 transition-shadow hover:shadow-md",
+                  "group overflow-hidden border-border bg-card/85 py-0 transition-shadow hover:shadow-md",
                   shouldStretch && "md:col-span-2 2xl:col-span-3"
                 )}
               >
@@ -138,20 +138,20 @@ export function UniversityCatalog() {
                         alt=""
                         className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/25 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-brand-deep/60 via-brand-deep/30 to-transparent" />
                     </>
                   ) : (
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgb(199_217_229/.9),transparent_45%),radial-gradient(circle_at_90%_10%,rgb(52_73_102/.45),transparent_40%),linear-gradient(145deg,rgb(36_56_83/.92),rgb(52_73_102/.85))]" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-brand-deep via-brand-panel to-action" />
                   )}
 
-                  <div className="absolute left-4 top-4 inline-flex items-center rounded-full bg-black/35 px-2.5 py-1 text-xs text-white backdrop-blur-sm">
+                  <div className="absolute left-4 top-4 inline-flex items-center rounded-full bg-brand-deep/55 px-2.5 py-1 text-xs text-white backdrop-blur-sm">
                     {cityLine || "Региональный университет"}
                   </div>
                 </div>
 
                 <CardContent className="p-4">
                   <div className="flex min-w-0 items-start gap-3">
-                    <Avatar className="h-11 w-11 shrink-0 ring-2 ring-white">
+                    <Avatar className="h-11 w-11 shrink-0 ring-2 ring-card">
                       <AvatarImage src={uni.avatarUrl ?? undefined} alt={uni.name} />
                       <AvatarFallback>{getInitials(uni.name)}</AvatarFallback>
                     </Avatar>
@@ -162,7 +162,7 @@ export function UniversityCatalog() {
                     </div>
                   </div>
 
-                  <p className="mt-3 min-h-[3.75rem] text-sm text-ink-soft line-clamp-3">
+                  <p className="mt-3 min-h-[3.75rem] text-sm text-muted-foreground line-clamp-3">
                     {uni.description || "Описание пока не добавлено."}
                   </p>
 

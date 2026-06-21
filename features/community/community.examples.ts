@@ -1,4 +1,4 @@
-import type { EventListItem, PostFeedItem, ProjectListItem } from "./community.types"
+import type { CommunityOrderItem, EventListItem, PostFeedItem, ProjectListItem } from "./community.types"
 
 export const demoPosts: PostFeedItem[] = [
   {
@@ -99,5 +99,48 @@ export const demoProjects: ProjectListItem[] = [
     university: null,
     group: null,
     _count: { members: 4, updates: 1 },
+  },
+]
+
+export const demoOrders: CommunityOrderItem[] = [
+  {
+    id: "demo-order-1",
+    title: "Нужен frontend для LMS-модуля",
+    summary: "Ищем разработчика под Next.js для внутреннего кабинета команды.",
+    descriptionMd:
+      "Задача: реализовать страницу прохождения практики с карточками задач, деталями и статусами проверки.",
+    status: "OPEN",
+    level: "MEDIUM",
+    techStack: ["Next.js", "TypeScript", "Tailwind"],
+    budgetMin: 40000,
+    budgetMax: 60000,
+    currency: "RUB",
+    deadlineAt: "2026-05-01T20:00:00.000Z",
+    publishedAt: "2026-04-08T12:00:00.000Z",
+    createdAt: "2026-04-08T12:00:00.000Z",
+    author: { id: "demo-order-author-1", name: "Команда Bayanum", avatarUrl: null },
+    assigneeUser: null,
+    university: null,
+    team: { id: "demo-team-1", name: "Bayanum Core" },
+  },
+  {
+    id: "demo-order-2",
+    title: "Backend API для рейтингов",
+    summary: "Требуется доработать модуль рейтинга и снепшоты лидерборда.",
+    descriptionMd:
+      "Нужно добавить таблицу рейтинговых событий, endpoint генерации снепшотов и фильтры по периоду.",
+    status: "REVIEW",
+    level: "HARD",
+    techStack: ["NestJS", "Prisma", "PostgreSQL"],
+    budgetMin: 70000,
+    budgetMax: 95000,
+    currency: "RUB",
+    deadlineAt: "2026-04-28T18:00:00.000Z",
+    publishedAt: "2026-04-03T09:30:00.000Z",
+    createdAt: "2026-04-03T09:30:00.000Z",
+    author: { id: "demo-order-author-2", name: "Технический отдел", avatarUrl: null },
+    assigneeUser: { id: "demo-assignee-1", name: "Алексей П.", avatarUrl: null },
+    university: null,
+    team: { id: "demo-team-2", name: "Backend Squad" },
   },
 ]

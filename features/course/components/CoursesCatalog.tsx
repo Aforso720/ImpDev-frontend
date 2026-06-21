@@ -1,9 +1,19 @@
 "use client"
 
 import Link from "next/link"
-import { startTransition, useDeferredValue, useState, type ReactNode } from "react"
-import { useQuery } from "@tanstack/react-query"
-import { BookOpen, ChevronLeft, ChevronRight, Filter, GraduationCap, Layers3, Search, Users } from "lucide-react"
+import { startTransition, useDeferredValue, useMemo, useState, type ReactNode } from "react"
+import { useQueries, useQuery } from "@tanstack/react-query"
+import {
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  GraduationCap,
+  Layers3,
+  Search,
+  Sparkles,
+  Users,
+} from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -11,12 +21,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
-import { formatDate } from "@/lib/format-date"
 
+import { AdaptiveService } from "../adaptive.service"
+import { calculateCourseProgress } from "../course-progress.helpers"
 import { CourseService } from "../course.service"
-import type { CourseListItem, CourseScopeFilter } from "../course.types"
-import type { HeroSlide } from "@/features/ui/HeroSlider"
-import { HeroSlider } from "@/features/ui/HeroSlider"
+import type { CourseScopeFilter } from "../course.types"
+import { CourseCard } from "./CourseCard"
 
 const PAGE_SIZE = 6
 
@@ -25,17 +35,6 @@ const scopeMeta: Record<CourseScopeFilter, { label: string; icon: ReactNode }> =
   PUBLIC: { label: "Публичные", icon: <BookOpen className="h-4 w-4" /> },
   UNIVERSITY: { label: "Университет", icon: <GraduationCap className="h-4 w-4" /> },
   TEAM: { label: "Команда", icon: <Users className="h-4 w-4" /> },
-}
-
-function scopeBadge(scope: CourseListItem["scope"]) {
-  switch (scope) {
-    case "PUBLIC":
-      return <Badge variant="secondary">Публичный</Badge>
-    case "UNIVERSITY":
-      return <Badge variant="outline">Университетский</Badge>
-    case "TEAM":
-      return <Badge>Командный</Badge>
-  }
 }
 
 export function CoursesCatalog() {
@@ -55,75 +54,139 @@ export function CoursesCatalog() {
       }),
   })
 
-  const items = data?.items ?? []
+  const items = useMemo(() => data?.items ?? [], [data?.items])
   const total = data?.total ?? 0
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
-  const catalogSlides: HeroSlide[] = [
-    {
-      id: "catalog-overview",
-      kicker: "Каталог обучения",
-      title: "Курсы для команды, университета и общего доступа",
-      description: "Быстрый обзор каталога с актуальными метриками по фильтрам и страницам.",
-      href: "/courses/my",
-      hrefLabel: "Мои курсы",
-      secondaryHref: "/team",
-      secondaryLabel: "Команда",
-      tone: "indigo",
-      stats: [
-        { label: "Найдено", value: `${total}` },
-        { label: "Страница", value: `${page}/${totalPages}` },
-        { label: "Фильтр", value: scopeMeta[scope].label },
-      ],
-    },
-    {
-      id: "catalog-filtering",
-      kicker: "Поиск и фильтрация",
-      title: "Настройте выборку курсов под нужный контекст",
-      description:
-        "Поиск работает по названию и описанию, фильтры разделяют публичные, университетские и командные курсы.",
-      href: "/courses",
-      hrefLabel: "Сбросить фильтры",
-      secondaryHref: "/university",
-      secondaryLabel: "Университеты",
-      tone: "ocean",
-      stats: [
-        { label: "Запрос", value: deferredQuery.trim() ? "Есть" : "Нет" },
-        { label: "Scope", value: scope },
-      ],
-    },
-    {
-      id: "catalog-actions",
-      kicker: "Навигация",
-      title: "Открывайте карточки и продолжайте обучение",
-      description: "Из каталога можно сразу перейти в курс, а затем закрепить материал в рабочем треке.",
-      href: "/courses",
-      hrefLabel: "Перейти в каталог",
-      secondaryHref: "/",
-      secondaryLabel: "На главную",
-      tone: "teal",
-      stats: [
-        { label: "Карточек на странице", value: `${items.length}` },
-        { label: "Всего страниц", value: `${totalPages}` },
-      ],
-    },
-  ]
+  const courseIds = useMemo(() => items.map((course) => course.id), [items])
+
+  const adaptiveStatesQuery = useQuery({
+    queryKey: ["adaptive", "course-states", "catalog", courseIds],
+    queryFn: () => AdaptiveService.getCourseStates(courseIds),
+    enabled: courseIds.length > 0,
+  })
+
+  const adaptiveStateMap = useMemo(
+    () => new Map((adaptiveStatesQuery.data ?? []).map((state) => [state.courseId, state])),
+    [adaptiveStatesQuery.data],
+  )
+
+  const planTargets = useMemo(
+    () =>
+      items.flatMap((course) => {
+        const adaptiveEnrollmentId = adaptiveStateMap.get(course.id)?.adaptiveEnrollmentId
+        if (!adaptiveEnrollmentId) return []
+        return [{ courseId: course.id, adaptiveEnrollmentId }]
+      }),
+    [adaptiveStateMap, items],
+  )
+
+  const planQueries = useQueries({
+    queries: planTargets.map((target) => ({
+      queryKey: ["adaptive", "plans", "catalog", target.adaptiveEnrollmentId],
+      queryFn: () => AdaptiveService.getPlans(target.adaptiveEnrollmentId, { currentOnly: true }),
+      staleTime: 60_000,
+    })),
+  })
+
+  const progressByCourse = useMemo(() => {
+    const map = new Map<string, ReturnType<typeof calculateCourseProgress>>()
+
+    planTargets.forEach((target, index) => {
+      const progress = calculateCourseProgress(planQueries[index]?.data?.[0])
+      map.set(target.courseId, progress)
+    })
+
+    return map
+  }, [planQueries, planTargets])
+
+  const continueCourses = useMemo(() => {
+    return items
+      .map((course) => {
+        const state = adaptiveStateMap.get(course.id)
+        const progress = progressByCourse.get(course.id)
+
+        let rank = 0
+        if (progress && progress.totalBlocks > 0) rank += 120 + progress.percent
+        if (state?.enrolled) rank += 70
+        if (state?.adaptiveReady) rank += 20
+
+        return { course, state, progress, rank }
+      })
+      .filter((entry) => entry.rank > 0)
+      .sort((a, b) => b.rank - a.rank)
+      .slice(0, 3)
+  }, [adaptiveStateMap, items, progressByCourse])
+
+  const recommendedCourses = useMemo(
+    () =>
+      items.slice(0, 3).map((course) => ({
+        course,
+        state: adaptiveStateMap.get(course.id),
+        progress: progressByCourse.get(course.id),
+      })),
+    [adaptiveStateMap, items, progressByCourse],
+  )
+
+  const hasContinue = continueCourses.length > 0
+  const spotlightCourses = hasContinue ? continueCourses : recommendedCourses
 
   return (
     <section className="space-y-6">
-      <HeroSlider slides={catalogSlides} />
+      <Card className="overflow-hidden border-0 bg-brand-deep text-white">
+        <CardContent className="grid gap-6 p-6 lg:grid-cols-[1.6fr_1fr] lg:p-8">
+          <div className="space-y-4">
+            <Badge variant="secondary" className="bg-nuri-accent/15 text-white hover:bg-nuri-accent/15">
+              Каталог обучения
+            </Badge>
+            <h1 className="text-3xl font-semibold text-white sm:text-4xl">Курсы с понятным следующим шагом</h1>
+            <p className="max-w-3xl text-sm text-white/82 sm:text-base">
+              Здесь удобно выбирать курс, видеть свой прогресс и сразу переходить к действию: начать, продолжить или вернуться к практике.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild firefly>
+                <Link href="/courses/studying">Мое обучение</Link>
+              </Button>
+              <Button asChild variant="outline" className="border-nuri-accent/35 bg-nuri-accent/10 text-white hover:bg-nuri-accent/20 hover:text-white">
+                <Link href="/">Вернуться на главную</Link>
+              </Button>
+            </div>
+          </div>
 
-      <Card className="bg-soft-panel">
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            <Card className="border-nuri-accent/20 bg-card/10 text-white shadow-none">
+              <CardContent className="p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-white/70">Найдено курсов</p>
+                <p className="mt-2 text-3xl font-semibold text-white">{total}</p>
+              </CardContent>
+            </Card>
+            <Card className="border-nuri-accent/20 bg-card/10 text-white shadow-none">
+              <CardContent className="p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-white/70">Страница</p>
+                <p className="mt-2 text-3xl font-semibold text-white">
+                  {page}/{totalPages}
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="border-nuri-accent/20 bg-card/10 text-white shadow-none">
+              <CardContent className="p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-white/70">Фильтр</p>
+                <p className="mt-2 text-xl font-semibold text-white">{scopeMeta[scope].label}</p>
+              </CardContent>
+            </Card>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-border bg-card text-card-foreground">
         <CardHeader className="gap-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2 text-ink-strong">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <Filter className="h-5 w-5" />
-                Фильтры каталога
+                Поиск и фильтры
               </CardTitle>
-              <CardDescription className="text-ink-muted">
-                Поиск и фильтрация работают поверх реальных ответов `/course`.
-              </CardDescription>
+              <CardDescription>Найдите курс по теме и сузьте каталог по типу доступа.</CardDescription>
             </div>
 
             <div className="relative w-full lg:max-w-md">
@@ -134,8 +197,8 @@ export function CoursesCatalog() {
                   setQuery(event.target.value)
                   startTransition(() => setPage(1))
                 }}
-                className="bg-white pl-9"
-                placeholder="Поиск по названию или описанию..."
+                className="bg-background pl-9"
+                placeholder="Поиск по названию и описанию..."
               />
             </div>
           </div>
@@ -160,6 +223,65 @@ export function CoursesCatalog() {
             ))}
           </div>
         </CardHeader>
+      </Card>
+
+      <Card className="border-border bg-card text-card-foreground">
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <Sparkles className="h-5 w-5" />
+              {hasContinue ? "Продолжить" : "Рекомендовано начать"}
+            </CardTitle>
+            <CardDescription>
+              {hasContinue
+                ? "Курсы на текущей странице, где уже есть персональный маршрут или активный прогресс."
+                : "Подборка курсов, с которых удобно начать обучение."}
+            </CardDescription>
+          </div>
+          <Button asChild variant="outline" className="w-full sm:w-auto">
+            <Link href="/courses/studying">Открыть мое обучение</Link>
+          </Button>
+        </CardHeader>
+
+        <CardContent>
+          {isLoading ? (
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {Array.from({ length: 3 }).map((_, idx) => (
+                <Skeleton key={idx} className="h-48 rounded-2xl" />
+              ))}
+            </div>
+          ) : spotlightCourses.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-border bg-muted/45 p-4 text-sm text-muted-foreground">
+              На этой странице пока нет курсов для блока продолжения. Попробуйте другой фильтр или поиск.
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {spotlightCourses.map(({ course, state, progress }) => (
+                <CourseCard
+                  key={course.id}
+                  course={course}
+                  adaptiveState={state}
+                  progress={progress}
+                  variant="spotlight"
+                />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="border-border bg-card text-card-foreground">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-foreground">
+            <BookOpen className="h-5 w-5" />
+            Каталог курсов
+          </CardTitle>
+          <CardDescription>
+            {isFetching ? "Обновляем список..." : `Показано ${items.length} из ${total}.`}
+            {" "}
+            {deferredQuery.trim() ? `Поиск: "${deferredQuery.trim()}".` : "Поиск не задан."}
+          </CardDescription>
+        </CardHeader>
 
         <CardContent>
           {isLoading ? (
@@ -169,68 +291,40 @@ export function CoursesCatalog() {
                   <CardContent className="space-y-4 p-5">
                     <Skeleton className="h-5 w-2/3" />
                     <Skeleton className="h-16 w-full" />
-                    <div className="flex gap-2">
-                      <Skeleton className="h-6 w-20" />
-                      <Skeleton className="h-6 w-24" />
-                    </div>
+                    <Skeleton className="h-8 w-full" />
                     <Skeleton className="h-10 w-full" />
                   </CardContent>
                 </Card>
               ))}
             </div>
           ) : isError ? (
-            <Card className="border-dashed">
+            <Card className="border-dashed border-destructive/40 bg-destructive/5">
               <CardContent className="p-6 text-sm text-destructive">
-                Не удалось загрузить каталог курсов. Проверь API и повтори попытку.
+                Не удалось загрузить каталог курсов. Проверьте соединение и повторите попытку.
               </CardContent>
             </Card>
           ) : items.length === 0 ? (
-            <Empty className="border-brand-soft bg-white/60">
+            <Empty className="border-border bg-card/70">
               <EmptyHeader>
                 <EmptyMedia variant="icon">
                   <BookOpen />
                 </EmptyMedia>
-                <EmptyTitle>Курсы не найдены</EmptyTitle>
+                <EmptyTitle>Курсы пока не найдены</EmptyTitle>
                 <EmptyDescription>
-                  Попробуй изменить поисковую фразу или снять фильтр по области доступа.
+                  Измените фильтр доступа или попробуйте другой поисковый запрос.
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
           ) : (
             <>
-              <div className="mb-4 flex items-center justify-between gap-3 text-sm text-ink-muted">
-                <p>{isFetching ? "Обновляем список..." : `Показано ${items.length} из ${total} курсов`}</p>
-                <p>Запрос: {deferredQuery.trim() ? `"${deferredQuery.trim()}"` : "без поиска"}</p>
-              </div>
-
               <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
                 {items.map((course) => (
-                  <Card key={course.id} className="flex h-full flex-col border-brand-soft bg-white/85">
-                    <CardContent className="flex h-full flex-col gap-4 p-5">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="space-y-2">
-                          <h3 className="text-lg font-semibold text-ink-strong">{course.title}</h3>
-                          <div className="flex flex-wrap gap-2">
-                            {scopeBadge(course.scope)}
-                            <Badge variant="outline">{course.slug}</Badge>
-                          </div>
-                        </div>
-                      </div>
-
-                      <p className="line-clamp-4 text-sm text-ink-soft">{course.description}</p>
-
-                      <div className="mt-auto space-y-3">
-                        <div className="rounded-xl bg-muted/60 p-3 text-sm">
-                          <p className="font-medium text-ink-strong">{course.author.name}</p>
-                          <p className="text-muted-foreground">Добавлен {formatDate(course.createdAt)}</p>
-                        </div>
-
-                        <Button asChild className="w-full">
-                          <Link href={`/courses/${course.slug}`}>Открыть курс</Link>
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <CourseCard
+                    key={course.id}
+                    course={course}
+                    adaptiveState={adaptiveStateMap.get(course.id)}
+                    progress={progressByCourse.get(course.id)}
+                  />
                 ))}
               </div>
 
@@ -246,9 +340,9 @@ export function CoursesCatalog() {
                   Назад
                 </Button>
 
-                <div className="text-sm text-ink-muted">
-                  Страница <span className="font-semibold text-ink-strong">{page}</span> из{" "}
-                  <span className="font-semibold text-ink-strong">{totalPages}</span>
+                <div className="text-sm text-muted-foreground">
+                  Страница <span className="font-semibold text-foreground">{page}</span> из{" "}
+                  <span className="font-semibold text-foreground">{totalPages}</span>
                 </div>
 
                 <Button

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { FireflyBackground } from "@/components/firefly/FireflyBackground";
 import "./globals.css";
 import { SITE_NAME } from "@/lib/constants/seo.constants";
 import { Providers } from "./providers";
@@ -35,12 +36,15 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
-          {children} {' '}
-          <Toaster
-          theme="dark"
-          position="bottom-right"
-          duration={1500}
-          />
+          <FireflyBackground />
+          <div className="relative z-10">
+            {children}
+            <Toaster
+            theme="dark"
+            position="bottom-right"
+            duration={1500}
+            />
+          </div>
         </Providers>
       </body>
     </html>

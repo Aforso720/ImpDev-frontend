@@ -4,6 +4,15 @@ export type PostReactionType = "LIKE" | "SUPPORT" | "CELEBRATE"
 export type EventFormat = "ONLINE" | "OFFLINE" | "HYBRID"
 export type EventRegistrationStatus = "REGISTERED" | "CANCELLED" | "WAITLISTED"
 export type ProjectStatus = "PLANNING" | "ACTIVE" | "ON_HOLD" | "COMPLETED" | "ARCHIVED"
+export type CommunityOrderStatus =
+  | "DRAFT"
+  | "OPEN"
+  | "IN_PROGRESS"
+  | "REVIEW"
+  | "DONE"
+  | "CANCELLED"
+  | "ARCHIVED"
+export type PracticeDifficulty = "EASY" | "MEDIUM" | "HARD"
 
 export type CommunityAuthor = {
   id: string
@@ -98,6 +107,26 @@ export type ProjectListItem = {
   }
 }
 
+export type CommunityOrderItem = {
+  id: string
+  title: string
+  summary: string
+  descriptionMd: string
+  status: CommunityOrderStatus
+  level: PracticeDifficulty
+  techStack: string[]
+  budgetMin: number | null
+  budgetMax: number | null
+  currency: string
+  deadlineAt: string | null
+  publishedAt: string | null
+  createdAt: string
+  author: CommunityAuthor
+  assigneeUser: CommunityAuthor | null
+  university: CommunityUniversity | null
+  team: CommunityGroup | null
+}
+
 export type CommunityPaginated<T> = {
   items: T[]
   total: number
@@ -161,4 +190,14 @@ export type ProjectQueryParams = {
   limit?: number
   q?: string
   status?: ProjectStatus
+}
+
+export type CommunityOrderQueryParams = {
+  page?: number
+  limit?: number
+  q?: string
+  status?: CommunityOrderStatus
+  level?: PracticeDifficulty
+  universityId?: string
+  teamId?: string
 }

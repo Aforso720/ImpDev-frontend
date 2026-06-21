@@ -32,22 +32,22 @@ export function MyUniversities() {
 
   return (
     <section className="space-y-6">
-      <Card className="overflow-hidden border-0 bg-brand-panel">
+      <Card className="overflow-hidden border-0 bg-brand-deep">
         <CardContent className="grid gap-4 p-6 lg:grid-cols-[1.6fr_1fr]">
           <div>
-            <Badge variant="secondary" className="bg-white/12 text-ink-inverse hover:bg-white/12">
+            <Badge variant="secondary" className="bg-nuri-accent/15 text-white hover:bg-nuri-accent/15">
               Университетские связи
             </Badge>
-            <h1 className="mt-4 text-3xl font-semibold text-ink-inverse">Мои университеты</h1>
-            <p className="mt-2 max-w-2xl text-sm text-ink-inverse/80">
+            <h1 className="mt-4 text-3xl font-semibold text-white">Мои университеты</h1>
+            <p className="mt-2 max-w-2xl text-sm text-white/80">
               Страница работает на `/university/my` и показывает активные membership-связи текущего пользователя.
             </p>
           </div>
 
-          <Card className="bg-white/10 shadow-none">
+          <Card className="bg-card/10 shadow-none">
             <CardContent className="p-4">
-              <p className="text-xs uppercase tracking-[0.2em] text-ink-inverse/60">Активных связей</p>
-              <p className="mt-2 text-3xl font-semibold text-ink-inverse">{items.length}</p>
+              <p className="text-xs uppercase tracking-[0.2em] text-white/60">Активных связей</p>
+              <p className="mt-2 text-3xl font-semibold text-white">{items.length}</p>
             </CardContent>
           </Card>
         </CardContent>
@@ -66,7 +66,7 @@ export function MyUniversities() {
           </CardContent>
         </Card>
       ) : items.length === 0 ? (
-        <Empty className="border-brand-soft bg-white/70">
+        <Empty className="border-border bg-card/70">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <GraduationCap />
@@ -80,7 +80,7 @@ export function MyUniversities() {
       ) : (
         <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
           {items.map((item) => (
-            <Card key={item.id} className="border-brand-soft bg-white/85">
+            <Card key={item.id} className="border-border bg-card/85">
               <CardHeader>
                 <div className="flex flex-wrap gap-2">
                   <Badge>{roleLabel(item.myRole)}</Badge>
@@ -90,7 +90,7 @@ export function MyUniversities() {
                 <CardDescription>{item.slug}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-ink-soft">{item.description || "Описание пока не заполнено."}</p>
+                <p className="text-sm text-muted-foreground">{item.description || "Описание пока не заполнено."}</p>
                 <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                   {item.city ? <span className="rounded-full bg-muted px-2 py-1">{item.city}</span> : null}
                   <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1">
@@ -104,7 +104,7 @@ export function MyUniversities() {
                     </span>
                   ) : null}
                 </div>
-                <Link href={`/university/${item.slug}`} className="text-sm font-medium text-brand-strong">
+                <Link href={`/university/${item.slug}`} className="text-sm font-medium text-primary">
                   Открыть профиль университета
                 </Link>
               </CardContent>

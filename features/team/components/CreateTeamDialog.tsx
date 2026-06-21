@@ -1,12 +1,13 @@
 "use client"
 
 import * as React from "react"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
+
+import { TeamApplication } from "@/components/forms/TeamApplication"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+
 import { TeamService } from "../team.service"
 
 type TeamFormValues = {
@@ -27,16 +28,27 @@ export function CreateTeamDialog({
 }) {
   const qc = useQueryClient()
   const [open, setOpen] = React.useState(false)
+  const [showSubmitTrace, setShowSubmitTrace] = React.useState(false)
+
+  const closeTimerRef = React.useRef<number | null>(null)
 
   const [name, setName] = React.useState(initialValues?.name ?? "")
   const [description, setDescription] = React.useState(initialValues?.description ?? "")
 
-  // когда открываем — подтягиваем актуальные значения (чтобы не было старых)
   React.useEffect(() => {
     if (!open) return
     setName(initialValues?.name ?? "")
     setDescription(initialValues?.description ?? "")
+    setShowSubmitTrace(false)
   }, [open, initialValues?.name, initialValues?.description])
+
+  React.useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) {
+        window.clearTimeout(closeTimerRef.current)
+      }
+    }
+  }, [])
 
   const isEdit = mode === "edit"
 
@@ -60,12 +72,16 @@ export function CreateTeamDialog({
       return TeamService.createTeam(payload)
     },
     onSuccess: async () => {
+      setShowSubmitTrace(true)
       toast.success(isEdit ? "Данные команды обновлены" : "Команда отправлена на модерацию")
-      setOpen(false)
 
-      // обновляем то, что у тебя на экране
       await qc.invalidateQueries({ queryKey: ["team", "me"] })
       await qc.invalidateQueries({ queryKey: ["teams", "all"] })
+
+      closeTimerRef.current = window.setTimeout(() => {
+        setShowSubmitTrace(false)
+        setOpen(false)
+      }, 760)
     },
     onError: (e: any) => {
       toast.error(e?.message || "Не удалось выполнить действие")
@@ -73,7 +89,13 @@ export function CreateTeamDialog({
   })
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next)
+        if (!next) setShowSubmitTrace(false)
+      }}
+    >
       <DialogTrigger asChild>{trigger}</DialogTrigger>
 
       <DialogContent className="sm:max-w-[520px]">
@@ -83,35 +105,24 @@ export function CreateTeamDialog({
             {isEdit ? (
               <>Измените название и описание команды.</>
             ) : (
-              <>
-                После модерации ваша команда станет публичной и появится в поиске.
-              </>
+              <>После модерации ваша команда станет публичной и появится в поиске.</>
             )}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-3">
-          <div className="grid gap-2">
-            <label className="text-sm font-medium">Название</label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Например: ImpDev" />
-          </div>
-
-          <div className="grid gap-2">
-            <label className="text-sm font-medium">Описание</label>
-            <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Коротко: чем занимаетесь, кого ищете…"
-              className="min-h-[110px]"
-            />
-          </div>
-        </div>
+        <TeamApplication
+          name={name}
+          description={description}
+          onNameChange={setName}
+          onDescriptionChange={setDescription}
+          traceActive={showSubmitTrace}
+        />
 
         <DialogFooter className="gap-2">
           <Button variant="secondary" onClick={() => setOpen(false)} disabled={isPending}>
             Отмена
           </Button>
-          <Button onClick={() => mutate()} disabled={isPending}>
+          <Button onClick={() => mutate()} disabled={isPending} firefly>
             {isPending ? "Сохраняем…" : isEdit ? "Сохранить" : "Создать"}
           </Button>
         </DialogFooter>

@@ -1,7 +1,8 @@
 "use client"
 
-import { Check, X } from "lucide-react"
+import * as React from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { Check, X } from "lucide-react"
 import { toast } from "sonner"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -12,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { BRAND_COLOR, CONTRAST_COLOR, MAIN_COLOR } from "@/lib/constants/colors.constants"
 import { formatDate } from "@/lib/format-date"
 import { getInitials } from "@/lib/getInitials"
+import { cn } from "@/lib/utils"
 
 import { TeamService } from "../team.service"
 
@@ -31,6 +33,14 @@ function statusBadge(status: JoinRequest["status"]) {
 
 export default function JoinRequestsTeamProfile() {
   const qc = useQueryClient()
+  const [traceId, setTraceId] = React.useState<string | null>(null)
+
+  const triggerTrace = React.useCallback((id: string) => {
+    setTraceId(id)
+    window.setTimeout(() => {
+      setTraceId((prev) => (prev === id ? null : prev))
+    }, 1000)
+  }, [])
 
   const {
     data: joinRequests,
@@ -46,7 +56,8 @@ export default function JoinRequestsTeamProfile() {
   const { mutate: approveMutate, isPending: isApprovePending, variables: approveVar } = useMutation({
     mutationKey: ["join-request", "approve"],
     mutationFn: (joinRequestId: string) => TeamService.approveJoinRequest(joinRequestId),
-    onSuccess: async () => {
+    onSuccess: async (_data, joinRequestId) => {
+      triggerTrace(joinRequestId)
       toast.success("Заявка принята")
       await qc.invalidateQueries({ queryKey: ["join-request", "team", "incoming"] })
       await qc.invalidateQueries({ queryKey: ["team", "members", "me"] })
@@ -59,7 +70,8 @@ export default function JoinRequestsTeamProfile() {
   const { mutate: rejectMutate, isPending: isRejectPending, variables: rejectVar } = useMutation({
     mutationKey: ["join-request", "reject"],
     mutationFn: (joinRequestId: string) => TeamService.rejectJoinRequest(joinRequestId),
-    onSuccess: async () => {
+    onSuccess: async (_data, joinRequestId) => {
+      triggerTrace(joinRequestId)
       toast.success("Заявка отклонена")
       await qc.invalidateQueries({ queryKey: ["join-request", "team", "incoming"] })
     },
@@ -72,10 +84,10 @@ export default function JoinRequestsTeamProfile() {
     <Card style={{ backgroundColor: MAIN_COLOR, color: CONTRAST_COLOR }} className="p-5">
       <CardHeader className="p-0 pb-4">
         <div className="flex items-center justify-between gap-3">
-          <CardTitle className="text-xl font-bold" style={{ color: BRAND_COLOR }}>
+          <CardTitle className="text-xl font-bold text-white" >
             Заявки в команду:
           </CardTitle>
-          <Badge variant="outline" className="border-brand-soft text-brand-strong">
+          <Badge variant="outline" className="border-border text-primary">
             {rows.length}
           </Badge>
         </div>
@@ -84,7 +96,7 @@ export default function JoinRequestsTeamProfile() {
       <CardContent className="p-0">
         {isLoading ? (
           <div className="space-y-3">
-            <div className="rounded-xl bg-white/10 p-4">
+            <div className="rounded-xl bg-card/10 p-4">
               <div className="flex items-center gap-3">
                 <Skeleton className="h-10 w-10 rounded-full" />
                 <div className="flex-1 space-y-2">
@@ -94,7 +106,7 @@ export default function JoinRequestsTeamProfile() {
                 <Skeleton className="h-9 w-24" />
               </div>
             </div>
-            <div className="rounded-xl bg-white/10 p-4">
+            <div className="rounded-xl bg-card/10 p-4">
               <div className="flex items-center gap-3">
                 <Skeleton className="h-10 w-10 rounded-full" />
                 <div className="flex-1 space-y-2">
@@ -106,11 +118,11 @@ export default function JoinRequestsTeamProfile() {
             </div>
           </div>
         ) : isError ? (
-          <div className="rounded-xl bg-white/10 p-4 text-sm">
+          <div className="rounded-xl bg-card/10 p-4 text-sm">
             Не удалось загрузить заявки. Попробуйте обновить страницу.
           </div>
         ) : rows.length === 0 ? (
-          <div className="rounded-xl bg-soft-panel p-4 text-sm text-ink-strong">
+          <div className="rounded-xl bg-card p-4 text-sm text-foreground">
             Сейчас нет заявок на вступление.
           </div>
         ) : (
@@ -122,7 +134,7 @@ export default function JoinRequestsTeamProfile() {
               const anyPendingThis = approvingThis || rejectingThis
 
               return (
-                <Card key={r.id} className="rounded-xl p-4 text-ink-strong">
+                <Card key={r.id} className={cn("rounded-xl p-4 text-foreground", traceId === r.id && "firefly-submit-trace")}>
                   <div className="flex flex-wrap items-center gap-3">
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={r.user.avatarUrl ?? undefined} alt={display} />
@@ -135,16 +147,15 @@ export default function JoinRequestsTeamProfile() {
                         {statusBadge(r.status)}
                       </div>
                       <p className="truncate text-xs opacity-80">{r.user.email}</p>
-                      <p className="text-xs opacity-70">
-                        Дата заявки: {r.createdAt ? formatDate(r.createdAt) : "—"}
-                      </p>
+                      <p className="text-xs opacity-70">Дата заявки: {r.createdAt ? formatDate(r.createdAt) : "—"}</p>
                     </div>
 
                     {r.status === "PENDING" ? (
                       <div className="flex items-center gap-2">
                         <Button
                           size="sm"
-                          className="cursor-pointer gap-2 border-2 border-brand-soft"
+                          className="cursor-pointer gap-2 border-2 border-border"
+                          firefly
                           onClick={() => approveMutate(r.id)}
                           disabled={anyPendingThis}
                         >
@@ -156,6 +167,7 @@ export default function JoinRequestsTeamProfile() {
                           size="sm"
                           variant="secondary"
                           className="cursor-pointer gap-2"
+                          firefly
                           onClick={() => rejectMutate(r.id)}
                           disabled={anyPendingThis}
                         >

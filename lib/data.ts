@@ -18,6 +18,11 @@ export const data = {
       icon: BookOpen,
     },
     {
+      title: "Задачи и экзамены",
+      url: "/challenges",
+      icon: ShieldCheck,
+    },
+    {
       title: "Сообщества",
       url: "/team",
       icon: Users,
@@ -49,3 +54,4 @@ export const data = {
     // },
   ],
 }
+

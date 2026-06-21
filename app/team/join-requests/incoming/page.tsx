@@ -1,5 +1,10 @@
-import { redirect } from "next/navigation"
+import JoinRequestsTeamProfile from "@/features/team/components/JoinRequestsTeamProfile"
 
-export default function TeamJoinRequestsPage() {
-  redirect("/team")
+export default function TeamJoinRequestsIncomingPage() {
+  return (
+    <section className="space-y-4">
+      <JoinRequestsTeamProfile />
+    </section>
+  )
 }
+

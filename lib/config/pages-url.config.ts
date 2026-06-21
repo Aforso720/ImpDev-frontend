@@ -4,6 +4,7 @@ class DASHBOARD {
     HOME = this.root
     TEAM = `${this.root}/team`
     COURSES = `${this.root}/courses`
+    CHALLENGES = `${this.root}/challenges`
     UNIVERSITY = `${this.root}/university`
     PROFILE = `${this.root}/profile`
 }

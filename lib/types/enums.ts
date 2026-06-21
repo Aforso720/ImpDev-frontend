@@ -4,3 +4,5 @@ export type Status = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 export type CourseScope = "PUBLIC" | "UNIVERSITY" | "TEAM";
 export type JoinRequestStatus = "PENDING" | "APPROVED" | "REJECTED";
 export type SubmissionStatus = "SUBMITTED" | "APPROVED" | "REJECTED";
+export type UniversityRole = "LEADER" | "INSTRUCTOR" | "STUDENT";
+export type MembershipStatus = "ACTIVE" | "BLOCKED";

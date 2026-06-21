@@ -39,22 +39,22 @@ export function ProfileOverview() {
 
   return (
     <section className="mx-auto w-full max-w-[980px] space-y-5 pb-6">
-      <Card className="overflow-hidden border-brand-soft py-0">
-        <CardHeader className="bg-brand-panel py-4">
-          <Badge variant="secondary" className="w-fit bg-white/12 text-ink-inverse hover:bg-white/12">
+      <Card className="overflow-hidden border-border py-0">
+        <CardHeader className="bg-brand-deep py-4">
+          <Badge variant="secondary" className="w-fit bg-nuri-accent/15 text-white hover:bg-nuri-accent/15">
             Профиль
           </Badge>
-          <CardTitle className="text-2xl text-ink-inverse">
+          <CardTitle className="text-2xl text-white">
             {isUserLoading ? "Загрузка профиля..." : user?.name || "Пользователь"}
           </CardTitle>
-          <CardDescription className="text-ink-inverse/85">
+          <CardDescription className="text-white/85">
             Личный контур в Bayanum: роль, связи с университетом и участие в сообществах.
           </CardDescription>
         </CardHeader>
       </Card>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Card className="border-brand-soft bg-soft-panel">
+        <Card className="border-border bg-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <Mail className="h-4 w-4" />
@@ -69,13 +69,13 @@ export function ProfileOverview() {
               </>
             ) : (
               <>
-                <div className="rounded-xl bg-white/75 p-3">
-                  <p className="text-xs uppercase tracking-[0.16em] text-ink-muted">Email</p>
-                  <p className="mt-1 font-medium text-ink-strong">{user?.email}</p>
+                <div className="rounded-xl bg-muted/45 p-3">
+                  <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Email</p>
+                  <p className="mt-1 font-medium text-foreground">{user?.email}</p>
                 </div>
-                <div className="rounded-xl bg-white/75 p-3">
-                  <p className="text-xs uppercase tracking-[0.16em] text-ink-muted">Роль</p>
-                  <p className="mt-1 font-medium text-ink-strong">{roleLabel[user?.role ?? "USER"]}</p>
+                <div className="rounded-xl bg-muted/45 p-3">
+                  <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Роль</p>
+                  <p className="mt-1 font-medium text-foreground">{roleLabel[user?.role ?? "USER"]}</p>
                 </div>
               </>
             )}
@@ -99,11 +99,11 @@ export function ProfileOverview() {
               <>
                 <div className="rounded-xl bg-muted/50 p-3">
                   <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Университет</p>
-                  <p className="mt-1 font-medium text-ink-strong">{universities[0]?.name ?? "Не привязан"}</p>
+                  <p className="mt-1 font-medium text-foreground">{universities[0]?.name ?? "Не привязан"}</p>
                 </div>
                 <div className="rounded-xl bg-muted/50 p-3">
                   <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Сообщество</p>
-                  <p className="mt-1 font-medium text-ink-strong">
+                  <p className="mt-1 font-medium text-foreground">
                     {isTeamLoading ? "Проверяем..." : team?.name || "Не привязан"}
                   </p>
                 </div>
@@ -113,7 +113,7 @@ export function ProfileOverview() {
         </Card>
       </div>
 
-      <Card className="border-brand-soft bg-soft-panel">
+      <Card className="border-border bg-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <CheckCircle2 className="h-4 w-4" />

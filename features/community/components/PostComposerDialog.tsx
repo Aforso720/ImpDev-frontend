@@ -288,7 +288,7 @@ export function PostComposerDialog({
             <div className="grid gap-2">
               <label className="text-sm font-medium">Сообщество</label>
               {isGroupFixed ? (
-                <div className="rounded-md border border-input bg-muted/40 px-3 py-2 text-sm text-ink-soft">
+                <div className="rounded-md border border-input bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
                   Сообщество определено текущим разделом.
                 </div>
               ) : (
@@ -317,7 +317,7 @@ export function PostComposerDialog({
                 return (
                   <label
                     key={category.id}
-                    className="flex cursor-pointer items-start gap-2 rounded-lg border border-brand-soft/60 bg-white/75 px-3 py-2"
+                    className="flex cursor-pointer items-start gap-2 rounded-lg border border-border/60 bg-muted/45 px-3 py-2"
                   >
                     <input
                       type="checkbox"
@@ -326,9 +326,9 @@ export function PostComposerDialog({
                       className="mt-0.5"
                     />
                     <span className="text-sm">
-                      <span className="block font-medium text-ink-strong">{category.title}</span>
+                      <span className="block font-medium text-foreground">{category.title}</span>
                       {category.description ? (
-                        <span className="block text-xs text-ink-muted">{category.description}</span>
+                        <span className="block text-xs text-muted-foreground">{category.description}</span>
                       ) : null}
                     </span>
                   </label>

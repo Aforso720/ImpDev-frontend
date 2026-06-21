@@ -2,12 +2,22 @@
 
 import Link from "next/link"
 import * as React from "react"
-import { Sparkles } from "lucide-react"
+import {
+  BookOpen,
+  BookOpenCheck,
+  Building2,
+  ClipboardCheck,
+  ClipboardList,
+  ShieldCheck,
+  Users,
+} from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
 
 import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
-import { Badge } from "@/components/ui/badge"
+import { canAccessTeacherPanel } from "@/features/teacher/teacher-access"
+import { useTeacherCourses } from "@/features/teacher/hooks"
 import {
   Sidebar,
   SidebarContent,
@@ -16,6 +26,58 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { data } from "@/lib/data"
+import { userService } from "@/lib/services/user.service"
+
+const teacherNavItems = [
+  {
+    title: "Панель преподавателя",
+    url: "/teacher",
+    icon: BookOpenCheck,
+  },
+  {
+    title: "Мои курсы",
+    url: "/teacher/courses",
+    icon: BookOpenCheck,
+  },
+  {
+    title: "Проверка практик",
+    url: "/teacher/submissions",
+    icon: ClipboardCheck,
+  },
+  {
+    title: "Проверка тестов",
+    url: "/teacher/assessments",
+    icon: ClipboardList,
+  },
+]
+
+const adminNavItems = [
+  {
+    title: "Админ-панель",
+    url: "/admin",
+    icon: ShieldCheck,
+  },
+  {
+    title: "Пользователи",
+    url: "/admin/users",
+    icon: Users,
+  },
+  {
+    title: "Команды",
+    url: "/admin/teams",
+    icon: ShieldCheck,
+  },
+  {
+    title: "Университеты",
+    url: "/admin/universities",
+    icon: Building2,
+  },
+  {
+    title: "Курсы",
+    url: "/admin/courses",
+    icon: BookOpen,
+  },
+]
 
 function SidebarBrand() {
   return (
@@ -45,11 +107,52 @@ function SidebarBrand() {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { data: user } = useQuery({
+    queryKey: ["user", "me"],
+    queryFn: () => userService.getProfile(),
+  })
+
+  const hasDirectTeacherAccess = canAccessTeacherPanel(user)
+  const teacherCoursesQuery = useTeacherCourses({
+    enabled: Boolean(user && !hasDirectTeacherAccess),
+  })
+
+  const showTeacherNav = canAccessTeacherPanel(
+    user,
+    (teacherCoursesQuery.data?.length ?? 0) > 0,
+  )
+  const showAdminNav = user?.role === "ADMIN"
+  const navGroups = React.useMemo(
+    () => [
+      {
+        title: "Обучение",
+        items: data.navMain,
+      },
+      ...(showTeacherNav
+        ? [
+            {
+              title: "Преподаватель",
+              items: teacherNavItems,
+            },
+          ]
+        : []),
+      ...(showAdminNav
+        ? [
+            {
+              title: "Администрирование",
+              items: adminNavItems,
+            },
+          ]
+        : []),
+    ],
+    [showAdminNav, showTeacherNav],
+  )
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarBrand />
-        <NavMain items={data.navMain} />
+        <NavMain groups={navGroups} />
       </SidebarHeader>
 
       <SidebarContent>

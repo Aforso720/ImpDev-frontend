@@ -1,7 +1,9 @@
 import { axiosWithAuth } from "@/lib/api/interceptors"
 
-import { demoEvents, demoProjects } from "./community.examples"
+import { demoEvents, demoOrders, demoProjects } from "./community.examples"
 import type {
+  CommunityOrderItem,
+  CommunityOrderQueryParams,
   CommunityPaginated,
   CreatePostCommentPayload,
   CreatePostPayload,
@@ -151,6 +153,29 @@ export const CommunityService = {
       return makeFallback(demoProjects, page, limit)
     } catch {
       return makeFallback(demoProjects, page, limit)
+    }
+  },
+
+  async getOrders(params: CommunityOrderQueryParams = {}): Promise<CommunityPaginated<CommunityOrderItem>> {
+    const page = params.page ?? 1
+    const limit = params.limit ?? 4
+
+    const query = buildQuery({
+      page,
+      limit,
+      q: params.q?.trim() || undefined,
+      status: params.status,
+      level: params.level,
+      universityId: params.universityId,
+      teamId: params.teamId,
+    })
+
+    try {
+      const response = await axiosWithAuth.get<CommunityPaginated<CommunityOrderItem>>(`/community-order?${query}`)
+      if (response.data.items.length > 0) return response.data
+      return makeFallback(demoOrders, page, limit)
+    } catch {
+      return makeFallback(demoOrders, page, limit)
     }
   },
 }

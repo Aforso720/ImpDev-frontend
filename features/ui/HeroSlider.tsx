@@ -36,12 +36,12 @@ type HeroSliderProps = {
 function toneClass(tone: HeroSlide["tone"]) {
   switch (tone) {
     case "indigo":
-      return "from-[#18335f] via-[#20457f] to-[#2e5fa3]"
+      return "from-brand-deep via-brand-panel to-action"
     case "teal":
-      return "from-[#163a58] via-[#19526f] to-[#2f7f8c]"
+      return "from-brand-deep via-action to-nuri-accent"
     case "ocean":
     default:
-      return "from-[#0f274a] via-[#1a3e73] to-[#2f66ac]"
+      return "from-brand-deep via-brand-panel to-brand-deep"
   }
 }
 
@@ -70,7 +70,7 @@ export function HeroSlider({ slides, autoPlayMs = 6500, className }: HeroSliderP
   return (
     <Card
       className={cn(
-        "relative overflow-hidden rounded-3xl border border-brand-soft shadow-[0_24px_70px_-36px_rgba(16,47,92,0.65)] py-0",
+        "relative overflow-hidden rounded-3xl border border-border py-0 shadow-2xl shadow-brand-deep/20",
         className,
       )}
       onMouseEnter={() => setIsPaused(true)}
@@ -79,7 +79,7 @@ export function HeroSlider({ slides, autoPlayMs = 6500, className }: HeroSliderP
       <CardContent className="relative h-[460px] p-0 sm:h-[410px] lg:h-[360px]">
         <div className={cn("relative isolate h-full overflow-hidden", "bg-gradient-to-br", toneClass(activeSlide.tone))}>
           <div className="pointer-events-none absolute -top-36 -right-28 size-80 rounded-full bg-white/15 blur-2xl" />
-          <div className="pointer-events-none absolute -bottom-32 -left-16 size-72 rounded-full bg-cyan-200/20 blur-2xl" />
+          <div className="pointer-events-none absolute -bottom-32 -left-16 size-72 rounded-full bg-nuri-accent/15 blur-2xl" />
 
           <div className="relative z-10 grid h-full content-between gap-6 p-6 pb-16 text-white sm:pb-18 lg:grid-cols-[1.6fr_1fr] lg:gap-7 lg:p-8 lg:pb-20">
             <div className="space-y-4">
@@ -96,7 +96,7 @@ export function HeroSlider({ slides, autoPlayMs = 6500, className }: HeroSliderP
 
               <div className="flex flex-wrap gap-2">
                 {activeSlide.href && activeSlide.hrefLabel ? (
-                  <Button asChild className="bg-white text-[#14305d] hover:bg-slate-100">
+                  <Button asChild>
                     <Link href={activeSlide.href}>{activeSlide.hrefLabel}</Link>
                   </Button>
                 ) : null}

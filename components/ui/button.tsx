@@ -1,7 +1,10 @@
+"use client"
+
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 
+import { FireflyInteraction } from "@/components/firefly/FireflyInteraction"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
@@ -42,15 +45,16 @@ function Button({
   className,
   variant = "default",
   size = "default",
+  firefly = false,
   asChild = false,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
+    firefly?: boolean
     asChild?: boolean
   }) {
   const Comp = asChild ? Slot : "button"
-
-  return (
+  const buttonNode = (
     <Comp
       data-slot="button"
       data-variant={variant}
@@ -58,6 +62,14 @@ function Button({
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     />
+  )
+
+  if (!firefly) return buttonNode
+
+  return (
+    <FireflyInteraction>
+      {buttonNode}
+    </FireflyInteraction>
   )
 }
 

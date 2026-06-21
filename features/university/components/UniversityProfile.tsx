@@ -67,7 +67,7 @@ function copy(text: string, okText: string) {
 
 function MetaChip({ icon, children }: { icon: ReactNode; children: ReactNode }) {
   return (
-    <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-white/25 bg-black/25 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+    <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-nuri-accent/25 bg-brand-deep/50 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
       <span className="opacity-80">{icon}</span>
       <span className="truncate">{children}</span>
     </div>
@@ -78,7 +78,7 @@ function Feature({ active, icon, label }: { active: boolean; icon: ReactNode; la
   if (!active) return null
 
   return (
-    <Badge variant="outline" className="gap-2 border-white/25 bg-white/12 text-white">
+    <Badge variant="outline" className="gap-2 border-nuri-accent/25 bg-nuri-accent/15 text-white">
       {icon}
       {label}
     </Badge>
@@ -250,14 +250,14 @@ export function UniversityProfile({ slug }: { slug: string }) {
             {uni.bannerUrl ? (
               <>
                 <img src={uni.bannerUrl} alt="" className="h-full w-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/45 to-black/20" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20" />
+                <div className="absolute inset-0 bg-gradient-to-r from-brand-deep/75 via-brand-deep/50 to-brand-deep/20" />
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-deep/55 via-transparent to-brand-deep/20" />
               </>
             ) : (
               <>
-                <div className="absolute -right-16 -top-12 h-56 w-56 rounded-full bg-white/20" />
-                <div className="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-white/15" />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/35 via-black/10 to-transparent" />
+                <div className="absolute -right-16 -top-12 h-56 w-56 rounded-full bg-nuri-accent/20" />
+                <div className="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-nuri-accent/15" />
+                <div className="absolute inset-0 bg-gradient-to-r from-brand-deep/45 via-brand-deep/15 to-transparent" />
               </>
             )}
           </div>
@@ -266,7 +266,7 @@ export function UniversityProfile({ slug }: { slug: string }) {
             <p className="text-xs uppercase tracking-[0.18em] text-white/70">Профиль университета</p>
 
             <div className="mt-3 flex min-w-0 items-start gap-4">
-              <Avatar className="h-16 w-16 shrink-0 rounded-2xl ring-2 ring-white/45">
+              <Avatar className="h-16 w-16 shrink-0 rounded-2xl ring-2 ring-nuri-accent/45">
                 <AvatarImage src={uni.avatarUrl ?? undefined} alt={uni.name} />
                 <AvatarFallback className="rounded-2xl">{getInitials(uni.name)}</AvatarFallback>
               </Avatar>
@@ -289,7 +289,7 @@ export function UniversityProfile({ slug }: { slug: string }) {
                 {tags.length ? (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {tags.slice(0, 8).map((tag) => (
-                      <Badge key={tag} variant="outline" className="border-white/30 bg-white/12 text-white">
+                      <Badge key={tag} variant="outline" className="border-nuri-accent/30 bg-nuri-accent/15 text-white">
                         {tag}
                       </Badge>
                     ))}
@@ -300,39 +300,39 @@ export function UniversityProfile({ slug }: { slug: string }) {
           </CardContent>
         </Card>
 
-        <Card className="min-w-0 bg-brand-panel py-0 text-ink-inverse">
+        <Card className="min-w-0 bg-brand-deep py-0 text-white">
           <CardHeader className="pb-3">
-            <CardTitle className="text-xl text-ink-inverse">Описание университета</CardTitle>
-            <CardDescription className="text-ink-inverse/70">
+            <CardTitle className="text-xl text-white">Описание университета</CardTitle>
+            <CardDescription className="text-white/70">
               Блок отделён от шапки, как в профиле команды, чтобы структура читалась легче.
             </CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-4 pt-0">
-            <p className="max-h-32 overflow-y-auto pr-1 text-sm text-ink-inverse/85 whitespace-pre-wrap break-words">
+            <p className="max-h-32 overflow-y-auto pr-1 text-sm text-white/85 whitespace-pre-wrap break-words">
               {uni.description || "Описание пока не заполнено."}
             </p>
 
             <div className="grid gap-2 text-xs sm:grid-cols-2">
-              <div className="rounded-xl bg-white/10 p-3">
-                <p className="text-ink-inverse/65">Статус</p>
+              <div className="rounded-xl bg-card/10 p-3">
+                <p className="text-white/65">Статус</p>
                 <p className="mt-1 font-semibold">{uni.status === "ACTIVE" ? "Активен" : "Приостановлен"}</p>
               </div>
 
-              <div className="rounded-xl bg-white/10 p-3">
-                <p className="text-ink-inverse/65">Часовой пояс</p>
+              <div className="rounded-xl bg-card/10 p-3">
+                <p className="text-white/65">Часовой пояс</p>
                 <p className="mt-1 font-semibold break-words">{uni.timezone || "Не указан"}</p>
               </div>
 
-              <div className="rounded-xl bg-white/10 p-3 sm:col-span-2">
-                <p className="text-ink-inverse/65">Обновление профиля</p>
+              <div className="rounded-xl bg-card/10 p-3 sm:col-span-2">
+                <p className="text-white/65">Обновление профиля</p>
                 <p className="mt-1 font-semibold">Обновлён: {uni.updatedAt ? formatDate(uni.updatedAt) : "—"}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="min-w-0 bg-[#C7D9E5] py-0">
+        <Card className="min-w-0 bg-card py-0">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">Действия</CardTitle>
             <CardDescription>Ссылки и инвайт собраны в одном блоке без повторов.</CardDescription>

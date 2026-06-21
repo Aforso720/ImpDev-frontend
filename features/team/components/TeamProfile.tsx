@@ -60,15 +60,15 @@ export const TeamProfile = () => {
         </div>
       ) : isMemberTeam === true ? (
         <section className="flex flex-col gap-5">
-          <header className="flex items-center justify-between gap-5 text-ink-inverse">
+          <header className="flex items-center justify-between gap-5 text-white">
             <Card
               style={{ backgroundColor: MAIN_COLOR }}
-              className="flex h-60 max-h-60 w-full flex-1/2 flex-wrap justify-center gap-4 p-5 text-ink-inverse"
+              className="flex h-60 max-h-60 w-full flex-1/2 flex-wrap justify-center gap-4 p-5 text-white"
             >
-              <img src="/mug.jpg" className="h-40 w-40 flex-shrink-0 rounded-2xl" alt="Команда" />
+              <img src={team?.avatarUrl?.trim() || "/default_image/default-team-avatar.svg"} className="h-40 w-40 flex-shrink-0 rounded-2xl" alt="Команда" />
 
               <div className="flex flex-col items-start gap-5 flex-wrap">
-                <CardTitle className="text-xl font-medium text-ink-inverse">Профиль команды</CardTitle>
+                <CardTitle className="text-xl font-medium text-white">Профиль команды</CardTitle>
 
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center gap-2 min-w-0">
@@ -95,11 +95,11 @@ export const TeamProfile = () => {
 
             <Card
               style={{ backgroundColor: MAIN_COLOR }}
-              className="h-60 max-h-60 flex-1/2 px-5 py-10 text-ink-inverse"
+              className="h-60 max-h-60 flex-1/2 px-5 py-10 text-white"
             >
-              <CardTitle className="text-xl font-medium text-ink-inverse">Описание команды:</CardTitle>
+              <CardTitle className="text-xl font-medium text-white">Описание команды:</CardTitle>
 
-              <CardDescription className="mt-2 max-h-60 overflow-y-auto pr-2 whitespace-pre-wrap break-words text-sm text-ink-inverse/80">
+              <CardDescription className="mt-2 max-h-60 overflow-y-auto pr-2 whitespace-pre-wrap break-words text-sm text-white/80">
                 {team?.description}
               </CardDescription>
             </Card>
@@ -107,7 +107,7 @@ export const TeamProfile = () => {
             {isTeamLeader && (
               <Card
                 style={{ backgroundColor: MAIN_COLOR }}
-                className="flex min-h-60 max-h-80 flex-1/8 flex-col items-center justify-evenly px-5 text-ink-inverse"
+                className="flex min-h-60 max-h-80 flex-1/8 flex-col items-center justify-evenly px-5 text-white"
               >
                 <ConfirmDialog
                   trigger={<Trash2 className="w-12 h-12 cursor-pointer" />}
@@ -149,17 +149,17 @@ export const TeamProfile = () => {
           {isTeamLeader && <JoinRequestsTeamProfile />}
         </section>
       ) : (
-        <div className="my-5 rounded-2xl border-2 border-brand-soft p-10">
-          <h2 className="text-center text-4xl font-semibold text-ink-strong">
+        <div className="my-5 rounded-2xl border-2 border-border p-10">
+          <h2 className="text-center text-4xl font-semibold text-foreground">
             У вас пока что нет команды
           </h2>
-          <p className="mt-3 text-center text-ink-soft">
+          <p className="mt-3 text-center text-muted-foreground">
             Вы можете вступить в существующую команду или создать свою. После модерации она станет
             публичной.
           </p>
 
           <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-            <CreateTeamDialog trigger={<Button>Создать команду</Button>} />
+            <CreateTeamDialog trigger={<Button firefly>Создать команду</Button>} />
           </div>
         </div>
       )}

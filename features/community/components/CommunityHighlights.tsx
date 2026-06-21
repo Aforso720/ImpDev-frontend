@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   CalendarClock,
+  ClipboardList,
   ExternalLink,
   HandHeart,
   Heart,
@@ -28,7 +29,13 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Textarea } from "@/components/ui/textarea"
 import { CommunityService } from "@/features/community/community.service"
 import { PostComposerDialog } from "@/features/community/components/PostComposerDialog"
-import type { EventListItem, PostFeedItem, PostReactionType, ProjectListItem } from "@/features/community/community.types"
+import type {
+  CommunityOrderItem,
+  EventListItem,
+  PostFeedItem,
+  PostReactionType,
+  ProjectListItem,
+} from "@/features/community/community.types"
 import { userService } from "@/lib/services/user.service"
 
 type CommunityHighlightsProps = {
@@ -83,6 +90,26 @@ function projectStatusLabel(value: ProjectListItem["status"]) {
   return "Архив"
 }
 
+function orderStatusLabel(value: CommunityOrderItem["status"]) {
+  if (value === "OPEN") return "Открыт"
+  if (value === "IN_PROGRESS") return "В работе"
+  if (value === "REVIEW") return "На ревью"
+  if (value === "DONE") return "Выполнен"
+  if (value === "DRAFT") return "Черновик"
+  if (value === "CANCELLED") return "Отменен"
+  return "Архив"
+}
+
+function formatBudget(item: CommunityOrderItem) {
+  const min = item.budgetMin
+  const max = item.budgetMax
+
+  if (min == null && max == null) return "Бюджет не указан"
+  if (min != null && max != null) return `${min.toLocaleString("ru-RU")} - ${max.toLocaleString("ru-RU")} ${item.currency}`
+  if (min != null) return `от ${min.toLocaleString("ru-RU")} ${item.currency}`
+  return `до ${max?.toLocaleString("ru-RU")} ${item.currency}`
+}
+
 export function CommunityHighlights({
   className,
   postsLimit = 10,
@@ -124,6 +151,17 @@ export function CommunityHighlights({
     queryKey: ["community", "projects", projectsLimit],
     enabled: showSidePanels,
     queryFn: () => CommunityService.getProjects({ limit: projectsLimit }),
+  })
+
+  const { data: ordersData, isLoading: isOrdersLoading } = useQuery({
+    queryKey: ["community", "orders", 4, universityId ?? "all", groupId ?? "all"],
+    enabled: showSidePanels,
+    queryFn: () =>
+      CommunityService.getOrders({
+        limit: 4,
+        universityId,
+        teamId: groupId,
+      }),
   })
 
   const { data: activePostDetail, isLoading: isActivePostLoading } = useQuery({
@@ -173,6 +211,7 @@ export function CommunityHighlights({
   const posts = postsData?.items ?? []
   const events = eventsData?.items ?? []
   const projects = projectsData?.items ?? []
+  const orders = ordersData?.items ?? []
 
   const handleSubmitComment = (postId: string) => {
     const content = (commentDrafts[postId] ?? "").trim()
@@ -201,15 +240,15 @@ export function CommunityHighlights({
 
   return (
     <section className={className}>
-      <section className="overflow-hidden rounded-xl border border-brand-soft bg-soft-panel shadow-sm">
-        <header className="border-b border-brand-soft/50 p-6">
+      <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+        <header className="border-b border-border/50 p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="flex items-center gap-2 text-lg font-semibold text-ink-strong">
+              <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
                 <Newspaper className="h-5 w-5" />
                 {heading}
               </h2>
-              <p className="mt-1 text-sm text-ink-soft">{description}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{description}</p>
             </div>
 
             {showCreateButton ? (
@@ -229,14 +268,14 @@ export function CommunityHighlights({
         <div className={showSidePanels ? "grid gap-6 p-6 xl:grid-cols-[1.55fr_1fr]" : "p-6"}>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold text-ink-strong">Публикации</h3>
+              <h3 className="text-base font-semibold text-foreground">Публикации</h3>
               <Badge variant="outline">{postsData?.total ?? 0}</Badge>
             </div>
 
             {isPostsLoading ? (
               Array.from({ length: 4 }).map((_, idx) => <Skeleton key={idx} className="h-36 rounded-xl" />)
             ) : posts.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-brand-soft bg-white/70 p-5 text-sm text-ink-muted">
+              <div className="rounded-xl border border-dashed border-border bg-card/70 p-5 text-sm text-muted-foreground">
                 Пока нет публикаций для этого раздела.
               </div>
             ) : (
@@ -246,8 +285,8 @@ export function CommunityHighlights({
                 const canManage = me?.id === post.author.id || me?.role === "ADMIN"
 
                 return (
-                  <article key={post.id} className="rounded-xl border border-brand-soft bg-white/90 p-4">
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-ink-muted">
+                  <article key={post.id} className="rounded-xl border border-border bg-card/90 p-4">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                       <Badge variant="secondary">{visibilityLabel(post.visibility)}</Badge>
                       {post.categories.map((category) => (
                         <Badge key={category.id} variant="outline">
@@ -257,18 +296,18 @@ export function CommunityHighlights({
                       <span className="ml-auto">{formatDateTime(post.publishedAt ?? post.createdAt)}</span>
                     </div>
 
-                    <h4 className="mt-2 text-lg font-semibold text-ink-strong">{post.title}</h4>
-                    <p className="mt-1 text-sm text-ink-soft">{trimText(post.contentMd, 220)}</p>
+                    <h4 className="mt-2 text-lg font-semibold text-foreground">{post.title}</h4>
+                    <p className="mt-1 text-sm text-muted-foreground">{trimText(post.contentMd, 220)}</p>
 
                     {post.coverUrl ? (
-                      <div className="mt-3 overflow-hidden rounded-lg border border-brand-soft/60">
+                      <div className="mt-3 overflow-hidden rounded-lg border border-border/60">
                         <img src={post.coverUrl} alt={post.title} className="h-52 w-full object-cover" />
                       </div>
                     ) : null}
 
                     <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                      <div className="text-xs text-ink-muted">
-                        <span className="font-medium text-ink-strong">{post.author.name}</span>
+                      <div className="text-xs text-muted-foreground">
+                        <span className="font-medium text-foreground">{post.author.name}</span>
                         {post.university ? ` • ${post.university.name}` : ""}
                         {post.group ? ` • ${post.group.name}` : ""}
                       </div>
@@ -332,12 +371,12 @@ export function CommunityHighlights({
                       </div>
                     </div>
 
-                    <div className="mt-2 text-xs text-ink-muted">
+                    <div className="mt-2 text-xs text-muted-foreground">
                       {post._count.reactions} реакций • {post._count.comments} комментариев
                     </div>
 
                     {isActive ? (
-                      <section className="mt-4 space-y-3 rounded-lg border border-brand-soft/60 bg-background p-3">
+                      <section className="mt-4 space-y-3 rounded-lg border border-border/60 bg-background p-3">
                         {isActivePostLoading ? (
                           <Skeleton className="h-24 rounded-lg" />
                         ) : (
@@ -345,24 +384,24 @@ export function CommunityHighlights({
                             <div className="space-y-2">
                               {detail?.comments.length ? (
                                 detail.comments.map((comment) => (
-                                  <div key={comment.id} className="rounded-lg border border-brand-soft/50 bg-white p-3">
-                                    <p className="text-xs text-ink-muted">
-                                      <span className="font-medium text-ink-strong">{comment.author.name}</span>
+                                  <div key={comment.id} className="rounded-lg border border-border/50 bg-card p-3">
+                                    <p className="text-xs text-muted-foreground">
+                                      <span className="font-medium text-foreground">{comment.author.name}</span>
                                       {" • "}
                                       {formatDateTime(comment.createdAt)}
                                     </p>
-                                    <p className="mt-1 text-sm text-ink-soft">{comment.contentMd}</p>
+                                    <p className="mt-1 text-sm text-muted-foreground">{comment.contentMd}</p>
 
                                     {comment.replies.length ? (
-                                      <div className="mt-2 space-y-2 border-l border-brand-soft/50 pl-3">
+                                      <div className="mt-2 space-y-2 border-l border-border/50 pl-3">
                                         {comment.replies.map((reply) => (
                                           <div key={reply.id} className="rounded-md bg-muted/40 p-2">
-                                            <p className="text-xs text-ink-muted">
-                                              <span className="font-medium text-ink-strong">{reply.author.name}</span>
+                                            <p className="text-xs text-muted-foreground">
+                                              <span className="font-medium text-foreground">{reply.author.name}</span>
                                               {" • "}
                                               {formatDateTime(reply.createdAt)}
                                             </p>
-                                            <p className="text-sm text-ink-soft">{reply.contentMd}</p>
+                                            <p className="text-sm text-muted-foreground">{reply.contentMd}</p>
                                           </div>
                                         ))}
                                       </div>
@@ -370,7 +409,7 @@ export function CommunityHighlights({
                                   </div>
                                 ))
                               ) : (
-                                <p className="text-sm text-ink-muted">Комментариев пока нет.</p>
+                                <p className="text-sm text-muted-foreground">Комментариев пока нет.</p>
                               )}
                             </div>
 
@@ -408,21 +447,21 @@ export function CommunityHighlights({
 
           {showSidePanels ? (
             <aside className="space-y-4">
-              <section className="rounded-xl border border-brand-soft bg-white/90 p-4">
-                <h3 className="text-base font-semibold text-ink-strong">Ближайшие события</h3>
+              <section className="rounded-xl border border-border bg-card/90 p-4">
+                <h3 className="text-base font-semibold text-foreground">Ближайшие события</h3>
                 <div className="mt-3 space-y-3">
                   {isEventsLoading ? (
                     Array.from({ length: 3 }).map((_, idx) => <Skeleton key={idx} className="h-20 rounded-lg" />)
                   ) : (
                     events.map((event) => (
-                      <article key={event.id} className="rounded-lg border border-brand-soft/60 bg-background p-3">
+                      <article key={event.id} className="rounded-lg border border-border/60 bg-background p-3">
                         <div className="flex items-center justify-between gap-2">
                           <Badge variant="outline">{eventFormatLabel(event.format)}</Badge>
-                          <span className="text-xs text-ink-muted">{event._count.registrations} участников</span>
+                          <span className="text-xs text-muted-foreground">{event._count.registrations} участников</span>
                         </div>
-                        <h4 className="mt-2 line-clamp-2 text-sm font-semibold text-ink-strong">{event.title}</h4>
-                        <p className="mt-1 line-clamp-2 text-xs text-ink-soft">{event.description}</p>
-                        <p className="mt-2 inline-flex items-center gap-1 text-xs text-ink-muted">
+                        <h4 className="mt-2 line-clamp-2 text-sm font-semibold text-foreground">{event.title}</h4>
+                        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{event.description}</p>
+                        <p className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
                           <CalendarClock className="h-3.5 w-3.5" />
                           {formatDateTime(event.startAt)}
                         </p>
@@ -432,23 +471,23 @@ export function CommunityHighlights({
                 </div>
               </section>
 
-              <section className="rounded-xl border border-brand-soft bg-white/90 p-4">
-                <h3 className="text-base font-semibold text-ink-strong">Активные проекты</h3>
+              <section className="rounded-xl border border-border bg-card/90 p-4">
+                <h3 className="text-base font-semibold text-foreground">Активные проекты</h3>
                 <div className="mt-3 space-y-3">
                   {isProjectsLoading ? (
                     Array.from({ length: 3 }).map((_, idx) => <Skeleton key={idx} className="h-20 rounded-lg" />)
                   ) : (
                     projects.map((project) => (
-                      <article key={project.id} className="rounded-lg border border-brand-soft/60 bg-background p-3">
+                      <article key={project.id} className="rounded-lg border border-border/60 bg-background p-3">
                         <div className="flex items-center justify-between gap-2">
                           <Badge variant="secondary">{projectStatusLabel(project.status)}</Badge>
-                          <span className="inline-flex items-center gap-1 text-xs text-ink-muted">
+                          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                             <Users className="h-3.5 w-3.5" />
                             {project._count.members}
                           </span>
                         </div>
-                        <h4 className="mt-2 line-clamp-2 text-sm font-semibold text-ink-strong">{project.title}</h4>
-                        <p className="mt-1 line-clamp-2 text-xs text-ink-soft">{project.summary}</p>
+                        <h4 className="mt-2 line-clamp-2 text-sm font-semibold text-foreground">{project.title}</h4>
+                        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{project.summary}</p>
                         <div className="mt-2 flex flex-wrap gap-2">
                           {project.demoUrl ? (
                             <Button asChild size="xs" variant="outline" className="gap-1">
@@ -466,6 +505,44 @@ export function CommunityHighlights({
                               </Link>
                             </Button>
                           ) : null}
+                        </div>
+                      </article>
+                    ))
+                  )}
+                </div>
+              </section>
+
+              <section className="rounded-xl border border-border bg-card/90 p-4">
+                <h3 className="text-base font-semibold text-foreground">Заказы сообщества</h3>
+                <div className="mt-3 space-y-3">
+                  {isOrdersLoading ? (
+                    Array.from({ length: 2 }).map((_, idx) => <Skeleton key={idx} className="h-24 rounded-lg" />)
+                  ) : orders.length === 0 ? (
+                    <div className="rounded-lg border border-dashed border-border/60 bg-background p-3 text-xs text-muted-foreground">
+                      Пока нет опубликованных заказов.
+                    </div>
+                  ) : (
+                    orders.map((order) => (
+                      <article key={order.id} className="rounded-lg border border-border/60 bg-background p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <Badge variant="outline">{orderStatusLabel(order.status)}</Badge>
+                          <span className="text-xs text-muted-foreground">{order.level}</span>
+                        </div>
+
+                        <h4 className="mt-2 line-clamp-2 text-sm font-semibold text-foreground">{order.title}</h4>
+                        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{order.summary}</p>
+
+                        <p className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
+                          <ClipboardList className="h-3.5 w-3.5" />
+                          {formatBudget(order)}
+                        </p>
+
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {order.techStack.slice(0, 3).map((stack) => (
+                            <Badge key={`${order.id}-${stack}`} variant="secondary">
+                              {stack}
+                            </Badge>
+                          ))}
                         </div>
                       </article>
                     ))

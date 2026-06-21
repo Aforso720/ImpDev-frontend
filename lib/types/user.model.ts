@@ -1,5 +1,15 @@
 import type { Id, IsoDateString } from "./common";
-import type { Role } from "./enums";
+import type { MembershipStatus, Role, UniversityRole } from "./enums";
+
+export interface IUserUniversityMembership {
+  id: Id;
+  universityId: Id;
+  userId: Id;
+  role: UniversityRole;
+  status: MembershipStatus;
+  createdAt: IsoDateString;
+  updatedAt: IsoDateString;
+}
 
 export interface IUser {
   id: Id;
@@ -13,6 +23,7 @@ export interface IUser {
 
   universityId?: Id | null;
   teamId?: Id | null;
+  universityMemberships?: IUserUniversityMembership[];
 }
 
 export interface IUpdateUserDto {

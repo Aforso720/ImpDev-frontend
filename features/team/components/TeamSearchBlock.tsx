@@ -50,7 +50,7 @@ const TeamSearchBlock = () => {
   })
 
   return (
-    <Card className={`bg-[${MAIN_COLOR}] mt-10 p-5 mb-5`}>
+    <Card style={{ backgroundColor: MAIN_COLOR }} className="mt-10 mb-5 p-5">
       <header className="flex items-center justify-between">
         <CardTitle className="text-2xl flex-1">Список всех команд</CardTitle>
         <InputInline value={query} onChange={setQuery} />
@@ -64,7 +64,7 @@ const TeamSearchBlock = () => {
         ) : isError ? (
           <div className="text-sm text-destructive">Не удалось загрузить список команд</div>
         ) : visibleTeams?.length === 0 ? (
-          <div className="text-xl text-center text-[#1d2d44]">Не удалось найти , может быть , создадите сами?</div>
+          <div className="text-xl text-center text-primary">Не удалось найти , может быть , создадите сами?</div>
         ) : (
           visibleTeams?.map((team) => {
             const pendingThis = isJoinPending && variables === team.id
@@ -74,7 +74,7 @@ const TeamSearchBlock = () => {
               <Card key={team.id} className="p-4">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10 shrink-0">
-                    <AvatarImage src={team.avatarUrl ?? undefined} alt={team.name} />
+                    <AvatarImage src={team.avatarUrl?.trim() || "/default_image/default-team-avatar.svg"} alt={team.name} />
                     <AvatarFallback>{getInitials(team.name)}</AvatarFallback>
                   </Avatar>
 
@@ -95,6 +95,7 @@ const TeamSearchBlock = () => {
                     <Button
                       size="lg"
                       className="shrink-0"
+                      firefly
                       variant={alreadySent ? "secondary" : "default"}
                       disabled={pendingThis || alreadySent}
                       onClick={() => joinMutate(team.id)}
@@ -113,3 +114,4 @@ const TeamSearchBlock = () => {
 }
 
 export default TeamSearchBlock
+

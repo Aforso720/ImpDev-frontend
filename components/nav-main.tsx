@@ -3,6 +3,9 @@
 import Link from "next/link"
 import { type LucideIcon } from "lucide-react"
 import {
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -15,16 +18,23 @@ type NavItem = {
   icon: LucideIcon
 }
 
-export function NavMain({ items }: { items: NavItem[] }) {
+export type NavGroup = {
+  title: string
+  items: NavItem[]
+}
+
+export function NavMain({ items, groups }: { items?: NavItem[]; groups?: NavGroup[] }) {
   const pathname = usePathname()
   
   function isItemActive(pathname: string, itemUrl: string) {
     if (itemUrl === "/") return pathname === "/"
     return pathname === itemUrl || pathname.startsWith(itemUrl + "/")
   }
-  return (
+
+  function renderMenu(menuItems: NavItem[]) {
+    return (
     <SidebarMenu>
-      {items.map((item) => {
+      {menuItems.map((item) => {
         const active = isItemActive(pathname, item.url)
 
         return (
@@ -39,5 +49,23 @@ export function NavMain({ items }: { items: NavItem[] }) {
         )
       })}
     </SidebarMenu>
+    )
+  }
+
+  if (groups?.length) {
+    return (
+      <>
+        {groups.map((group) => (
+          <SidebarGroup key={group.title} className="py-1">
+            <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
+            <SidebarGroupContent>{renderMenu(group.items)}</SidebarGroupContent>
+          </SidebarGroup>
+        ))}
+      </>
+    )
+  }
+
+  return (
+    renderMenu(items ?? [])
   )
 }

@@ -16,12 +16,15 @@ function getTitleByRoute(pathname: string, status: string | null) {
   if (pathname === "/") return "Главная"
 
   if (pathname === "/courses") return "Курсы"
+  if (pathname === "/courses/studying") return "Мое обучение"
+  if (pathname === "/challenges") return "Challenges"
   if (pathname === "/courses/my") {
     if (status === "DRAFT") return "Черновики курсов"
     if (status === "PUBLISHED") return "Опубликованные курсы"
     if (status === "ARCHIVED") return "Архив курсов"
-    return "Мои курсы"
+    return "Авторские курсы"
   }
+  if (pathname.includes("/learn")) return "Прохождение курса"
   if (pathname.startsWith("/courses/")) return "Карточка курса"
 
   if (pathname === "/team") return "Группы и сообщества"
@@ -36,6 +39,7 @@ function getTitleByRoute(pathname: string, status: string | null) {
   if (pathname === "/programs") return "Программы"
   if (pathname === "/analytics") return "Факты и аналитика"
   if (pathname === "/profile") return "Профиль"
+  if (pathname === "/profile/settings") return "Настройки"
 
   return "Главная"
 }
@@ -47,7 +51,7 @@ export function PageHeader() {
   const title = getTitleByRoute(pathname, status)
 
   return (
-    <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+    <header className="page-shell-header flex h-16 shrink-0 items-center gap-2 mb-5 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 mb-5card-content ">
       <div className="flex items-center gap-2 px-4">
         <SidebarTrigger className="-ml-1" />
         <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />

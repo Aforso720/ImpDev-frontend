@@ -23,7 +23,7 @@ export function InputInline({
       <Input
         type="search"
         placeholder={placeholder}
-        className="border-[#344966]"
+        className="border-brand-soft"
         value={value}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
@@ -31,7 +31,7 @@ export function InputInline({
           if (e.key === "Enter") onSubmit?.()
         }}
       />
-      <Button type="button" disabled={disabled} onClick={onSubmit}>
+      <Button type="button" disabled={disabled} onClick={onSubmit} firefly>
         Поиск
       </Button>
     </Field>

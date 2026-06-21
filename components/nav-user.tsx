@@ -1,7 +1,14 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Bell, ChevronsUpDown, LogOut, Settings, User } from "lucide-react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
+
+import { UniversityService } from "@/features/university/university.service"
+import { authService } from "@/lib/services/auth.service"
+import { userService } from "@/lib/services/user.service"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -14,13 +21,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
-
-import { UniversityService } from "@/features/university/university.service"
-import { authService } from "@/lib/services/auth.service"
-import { userService } from "@/lib/services/user.service"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useRouter } from "next/navigation"
-import { toast } from "sonner"
 
 const roleLabel: Record<string, string> = {
   ADMIN: "Администратор",
@@ -60,8 +60,8 @@ export function NavUser() {
 
   const safeName = user?.name ?? "Пользователь"
   const safeAvatar = user?.avatarUrl ?? ""
-  const universityName = myUniversities[0]?.name ?? "Без университета"
-  const subtitle = `${roleLabel[user?.role ?? "USER"]} · ${universityName}`
+  const universityName = myUniversities[0]?.name ?? ""
+  const subtitle = `${roleLabel[user?.role ?? "USER"]}  ${universityName}`
 
   return (
     <SidebarMenu>
@@ -116,9 +116,11 @@ export function NavUser() {
                   Профиль
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem disabled>
-                <Settings />
-                Настройки
+              <DropdownMenuItem asChild>
+                <Link href="/profile/settings">
+                  <Settings />
+                  Настройки
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem disabled>
                 <Bell />

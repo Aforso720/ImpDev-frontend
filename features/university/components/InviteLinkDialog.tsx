@@ -29,7 +29,7 @@ export function InviteLinkDialog({
         </DialogHeader>
 
         <div className="flex items-center gap-2">
-          <Input value={inviteUrl} readOnly className="border-[#344966]" />
+          <Input value={inviteUrl} readOnly className="border-border" />
           <Button type="button" variant="outline" size="icon" onClick={onCopy} title="Скопировать">
             <Copy className="h-4 w-4" />
           </Button>
